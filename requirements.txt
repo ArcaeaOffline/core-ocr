@@ -1,0 +1,5 @@
+black==23.3.0
+imutils==0.5.4
+numpy==1.24.3
+opencv-python==4.7.0.72
+pytesseract==0.3.10
