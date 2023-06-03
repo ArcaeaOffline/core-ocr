@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arcaea-offline-ocr"
+version = "0.1.0"
+authors = [{ name = "283375", email = "log_283375@163.com" }]
+description = "Extract Arcaea play result from your screenshot."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "imutils==0.5.4",
+  "numpy==1.24.3",
+  "opencv-python==4.7.0.72",
+  "pytesseract==0.3.10",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/283375/arcaea-offline-ocr"
+"Bug Tracker" = "https://github.com/283375/arcaea-offline-ocr/issues"
+
+[tool.isort]
+profile = "black"
+src_paths = ["src/arcaea_offline_ocr"]
+
+[tool.pyright]
+ignore = ["**/__debug*.*"]
