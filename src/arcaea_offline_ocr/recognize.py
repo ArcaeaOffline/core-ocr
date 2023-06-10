@@ -8,6 +8,19 @@ from .device import Device
 from .mask import *
 from .ocr import *
 
+__all__ = [
+    "process_digits_ocr_img",
+    "process_tesseract_ocr_img",
+    "recognize_pure",
+    "recognize_far_lost",
+    "recognize_score",
+    "recognize_max_recall",
+    "recognize_rating_class",
+    "recognize_title",
+    "RecognizeResult",
+    "recognize",
+]
+
 
 def process_digits_ocr_img(img_hsv_cropped: Mat, mask=Callable[[Mat], Mat]):
     img_hsv_cropped = mask(img_hsv_cropped)
