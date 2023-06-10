@@ -32,6 +32,13 @@ from numpy import uint8
 
 from ._builtin_templates import GeoSansLight_Italic, GeoSansLight_Regular
 
+__all__ = [
+    "load_digit_template",
+    "load_builtin_digit_template",
+    "MatchTemplateMultipleResult",
+    "matchTemplateMultiple",
+]
+
 
 def load_digit_template(filename: str) -> Dict[int, Mat]:
     """

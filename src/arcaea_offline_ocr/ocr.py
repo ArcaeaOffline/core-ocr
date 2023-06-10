@@ -11,6 +11,19 @@ from .template import (
     matchTemplateMultiple,
 )
 
+__all__ = [
+    "group_numbers",
+    "FilterDigitResultDict",
+    "filter_digit_results",
+    "ocr_digits",
+    "ocr_pure",
+    "ocr_far_lost",
+    "ocr_score",
+    "ocr_max_recall",
+    "ocr_rating_class",
+    "ocr_title",
+]
+
 
 def group_numbers(numbers: List[int], threshold: int) -> List[List[int]]:
     """

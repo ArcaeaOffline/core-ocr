@@ -24,6 +24,9 @@ classifiers = [
 "Homepage" = "https://github.com/283375/arcaea-offline-ocr"
 "Bug Tracker" = "https://github.com/283375/arcaea-offline-ocr/issues"
 
+[tool.black]
+extend-exclude = 'src/arcaea_offline_ocr/_builtin_templates.py'
+
 [tool.isort]
 profile = "black"
 src_paths = ["src/arcaea_offline_ocr"]

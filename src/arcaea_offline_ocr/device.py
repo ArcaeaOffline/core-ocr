@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Tuple
 
+__all__ = ["Device"]
+
 
 @dataclass(kw_only=True)
 class Device:
