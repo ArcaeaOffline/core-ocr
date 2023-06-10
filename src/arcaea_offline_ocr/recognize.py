@@ -1,12 +1,24 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable, Optional
 
-from cv2 import COLOR_BGR2HSV, GaussianBlur, cvtColor, imread
+from cv2 import COLOR_BGR2HSV, GaussianBlur, Mat, cvtColor, imread
 
 from .crop import *
 from .device import Device
 from .mask import *
 from .ocr import *
+
+
+def process_digit_ocr_img(img_hsv, mask=Callable[[Mat], Mat]):
+    img_hsv = mask(img_hsv)
+    img_hsv = GaussianBlur(img_hsv, (3, 3), 0)
+    return img_hsv
+
+
+def process_tesseract_ocr_img(img_hsv, mask=Callable[[Mat], Mat]):
+    img_hsv = mask(img_hsv)
+    img_hsv = GaussianBlur(img_hsv, (1, 1), 0)
+    return img_hsv
 
 
 @dataclass(kw_only=True)
@@ -25,36 +37,29 @@ def recognize(img_filename: str, device: Device):
     img_hsv = cvtColor(img, COLOR_BGR2HSV)
 
     pure_roi = crop_to_pure(img_hsv, device)
-    pure_roi = mask_gray(pure_roi)
-    pure_roi = GaussianBlur(pure_roi, (3, 3), 0)
-    pure = ocr_pure(pure_roi)
+    pure = ocr_pure(process_digit_ocr_img(pure_roi, mask=mask_gray))
 
     far_roi = crop_to_far(img_hsv, device)
-    far_roi = mask_gray(far_roi)
-    far_roi = GaussianBlur(far_roi, (3, 3), 0)
-    far = ocr_far_lost(far_roi)
+    far = ocr_far_lost(process_digit_ocr_img(far_roi, mask=mask_gray))
 
     lost_roi = crop_to_lost(img_hsv, device)
-    lost_roi = mask_gray(lost_roi)
-    lost_roi = GaussianBlur(lost_roi, (3, 3), 0)
-    lost = ocr_far_lost(lost_roi)
+    lost = ocr_far_lost(process_digit_ocr_img(lost_roi, mask=mask_gray))
 
     score_roi = crop_to_score(img_hsv, device)
-    score_roi = mask_white(score_roi)
-    score_roi = GaussianBlur(score_roi, (3, 3), 0)
-    score = ocr_score(score_roi)
+    score = ocr_score(process_digit_ocr_img(score_roi, mask=mask_white))
 
     max_recall_roi = crop_to_max_recall(img_hsv, device)
-    max_recall_roi = mask_gray(max_recall_roi)
-    max_recall = ocr_max_recall(max_recall_roi)
+    max_recall = ocr_max_recall(
+        process_tesseract_ocr_img(max_recall_roi, mask=mask_gray)
+    )
 
     rating_class_roi = crop_to_rating_class(img_hsv, device)
-    rating_class_roi = mask_rating_class(rating_class_roi)
-    rating_class = ocr_rating_class(rating_class_roi)
+    rating_class = ocr_rating_class(
+        process_tesseract_ocr_img(rating_class_roi, mask=mask_rating_class)
+    )
 
     title_roi = crop_to_title(img_hsv, device)
-    title_roi = mask_white(title_roi)
-    title = ocr_title(title_roi)
+    title = ocr_title(process_tesseract_ocr_img(title_roi, mask=mask_white))
 
     return RecognizeResult(
         pure=pure,
