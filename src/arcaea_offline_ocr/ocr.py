@@ -54,12 +54,17 @@ def filter_digit_results(
 ):
     result_sorted_by_x_pos: Dict[
         int, List[FilterDigitResultDict]
-    ] = {}  # dict[x_pos, dict[int, list[result]]]
+    ] = {}  # Dictionary to store results sorted by x-position
+
+    # Iterate over each digit and its match results
     for digit, match_results in results.items():
         if match_results:
+            # Iterate over each match result
             for result in match_results:
-                x_pos = result["xywh"][0]
-                _dict = {**result, "digit": digit}
+                x_pos = result["xywh"][0]  # Extract x-position from result
+                _dict = {**result, "digit": digit}  # Add digit information to result
+
+                # Store result in result_sorted_by_x_pos dictionary
                 if result_sorted_by_x_pos.get(x_pos) is None:
                     result_sorted_by_x_pos[x_pos] = [_dict]
                 else:
@@ -67,22 +72,32 @@ def filter_digit_results(
 
     x_poses_grouped: List[List[int]] = group_numbers(
         list(result_sorted_by_x_pos), threshold
-    )
+    )  # Group x-positions based on threshold
 
     final_result: Dict[
         int, List[MatchTemplateMultipleResult]
-    ] = {}  # dict[digit, list[Results]]
+    ] = {}  # Dictionary to store final filtered results
+
+    # Iterate over each group of x-positions
     for x_poses in x_poses_grouped:
         possible_results = []
+        # Iterate over each x-position in the group
         for x_pos in x_poses:
+            # Retrieve all results associated with the x-position
             possible_results.extend(result_sorted_by_x_pos.get(x_pos, []))
-        result = sorted(possible_results, key=lambda d: d["max_val"], reverse=True)[0]
-        result_digit = result["digit"]
-        result.pop("digit", None)
-        if final_result.get(result_digit) is None:
-            final_result[result_digit] = [result]
-        else:
-            final_result[result_digit].append(result)
+
+        if possible_results:
+            # Sort the results based on "max_val" in descending order and select the top result
+            result = sorted(possible_results, key=lambda d: d["max_val"], reverse=True)[0]
+            result_digit = result["digit"]  # Get the digit value from the result
+            result.pop("digit", None)  # Remove the digit key from the result
+
+            # Store the result in the final_result dictionary
+            if final_result.get(result_digit) is None:
+                final_result[result_digit] = [result]
+            else:
+                final_result[result_digit].append(result)
+
     return final_result
 
 
