@@ -88,7 +88,11 @@ def filter_digit_results(
 
         if possible_results:
             # Sort the results based on "max_val" in descending order and select the top result
-            result = sorted(possible_results, key=lambda d: d["max_val"], reverse=True)[0]
+            result = sorted(
+                possible_results,
+                key=lambda d: d["max_val"],
+                reverse=True,
+            )[0]
             result_digit = result["digit"]  # Get the digit value from the result
             result.pop("digit", None)  # Remove the digit key from the result
 
