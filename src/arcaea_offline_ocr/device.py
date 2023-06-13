@@ -32,3 +32,6 @@ class Device:
                 score=json_dict["score"],
                 title=json_dict["title"],
             )
+
+    def repr_info(self):
+        return f"Device(version={self.version}, uuid={repr(self.uuid)}, name={repr(self.name)})"
