@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="300"
+   width="340"
    height="40"
-   viewBox="0 0 300 40.000002"
+   viewBox="0 0 340 40.000002"
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
@@ -43,6 +43,6 @@
          sodipodi:role="line"
          id="tspan234"
          x="8.2400198"
-         y="34.400002">0123456789</tspan></text>
+         y="34.400002">0123456789 '</tspan></text>
   </g>
 </svg>

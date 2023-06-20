@@ -1,6 +1,6 @@
+import pickle
 from base64 import b64decode
-from time import sleep
-from typing import Dict, List, Literal, Tuple, TypedDict
+from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 
 from cv2 import (
     CHAIN_APPROX_SIMPLE,
@@ -26,55 +26,79 @@ from cv2 import (
     threshold,
     waitKey,
 )
-from imutils import contours, grab_contours
-from numpy import frombuffer as np_frombuffer
-from numpy import uint8
+from numpy import ndarray
 
-from ._builtin_templates import GeoSansLight_Italic, GeoSansLight_Regular
+from ._builtin_templates import (
+    DEFAULT_ITALIC,
+    DEFAULT_ITALIC_ERODED,
+    DEFAULT_REGULAR,
+    DEFAULT_REGULAR_ERODED,
+)
 
 __all__ = [
-    "load_digit_template",
+    "TemplateItem",
+    "DigitTemplate",
     "load_builtin_digit_template",
     "MatchTemplateMultipleResult",
     "matchTemplateMultiple",
 ]
 
-
-def load_digit_template(filename: str) -> Dict[int, Mat]:
-    """
-    Arguments:
-        filename -- An image with white background and black "0 1 2 3 4 5 6 7 8 9" text.
-
-    Returns:
-        dict[int, cv2.Mat]
-    """
-    # https://pyimagesearch.com/2017/07/17/credit-card-ocr-with-opencv-and-python/
-    ref = imread(filename)
-    ref = cvtColor(ref, COLOR_BGR2GRAY)
-    ref = threshold(ref, 10, 255, THRESH_BINARY_INV)[1]
-    refCnts = findContours(ref.copy(), RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)
-    refCnts = grab_contours(refCnts)
-    refCnts = contours.sort_contours(refCnts, method="left-to-right")[0]
-    digits = {}
-    for i, cnt in enumerate(refCnts):
-        (x, y, w, h) = boundingRect(cnt)
-        roi = ref[y : y + h, x : x + w]
-        digits[i] = roi
-    return digits
+# a list of Mat showing following characters:
+# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ']
+TemplateItem = Union[List[Mat], Tuple[Mat]]
 
 
-def load_builtin_digit_template(
-    name: Literal["GeoSansLight-Regular", "GeoSansLight-Italic"]
-):
-    name_builtin_template_b64_map = {
-        "GeoSansLight-Regular": GeoSansLight_Regular,
-        "GeoSansLight-Italic": GeoSansLight_Italic,
+class DigitTemplate:
+    __slots__ = ["regular", "italic", "regular_eroded", "italic_eroded"]
+
+    regular: TemplateItem
+    italic: TemplateItem
+    regular_eroded: TemplateItem
+    italic_eroded: TemplateItem
+
+    def __ensure_template_item(self, item):
+        return (
+            isinstance(item, (list, tuple))
+            and len(item) == 11
+            and all(isinstance(i, ndarray) for i in item)
+        )
+
+    def __init__(self, regular, italic, regular_eroded, italic_eroded):
+        self.regular = regular
+        self.italic = italic
+        self.regular_eroded = regular_eroded
+        self.italic_eroded = italic_eroded
+
+    def __setattr__(self, __name: str, __value: Any):
+        if __name in {
+            "regular",
+            "italic",
+            "regular_eroded",
+            "italic_eroded",
+        } and self.__ensure_template_item(__value):
+            super().__setattr__(__name, __value)
+            return
+
+        raise ValueError(
+            "Invalid attribute set, expected type TemplateItem or invalid attribute name."
+        )
+
+
+def load_builtin_digit_template(name: Literal["default"]) -> DigitTemplate:
+    CONSTANTS = {
+        "default": [
+            DEFAULT_REGULAR,
+            DEFAULT_ITALIC,
+            DEFAULT_REGULAR_ERODED,
+            DEFAULT_ITALIC_ERODED,
+        ]
     }
-    template_b64 = name_builtin_template_b64_map[name]
-    return {
-        int(key): imdecode(np_frombuffer(b64decode(b64str), uint8), IMREAD_GRAYSCALE)
-        for key, b64str in template_b64.items()
-    }
+    args = CONSTANTS[name]
+    args = [
+        [pickle.loads(b64decode(encoded_str)) for encoded_str in arg] for arg in args
+    ]
+
+    return DigitTemplate(*args)
 
 
 class MatchTemplateMultipleResult(TypedDict):
@@ -85,10 +109,6 @@ class MatchTemplateMultipleResult(TypedDict):
 def matchTemplateMultiple(
     src: Mat, template: Mat, threshold: float = 0.1
 ) -> List[MatchTemplateMultipleResult]:
-    """
-    Returns:
-        A list of tuple[x, y, w, h] representing the matched rectangle
-    """
     template_result = matchTemplate(src, template, TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = minMaxLoc(template_result)
     template_h, template_w = template.shape[:2]
