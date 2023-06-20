@@ -1,12 +1,27 @@
 import re
 from typing import Dict, List
 
-from cv2 import Mat
-from imutils import resize
+from cv2 import (
+    CHAIN_APPROX_SIMPLE,
+    RETR_EXTERNAL,
+    TM_CCOEFF_NORMED,
+    Mat,
+    boundingRect,
+    findContours,
+    imshow,
+    matchTemplate,
+    minMaxLoc,
+    rectangle,
+    resize,
+    waitKey,
+)
+from imutils import grab_contours
+from imutils import resize as imutils_resize
 from pytesseract import image_to_string
 
 from .template import (
     MatchTemplateMultipleResult,
+    TemplateItem,
     load_builtin_digit_template,
     matchTemplateMultiple,
 )
@@ -120,13 +135,14 @@ def filter_digit_results(
 
 def ocr_digits(
     img: Mat,
-    templates: Dict[int, Mat],
+    templates: TemplateItem,
     template_threshold: float,
     filter_threshold: int,
 ):
+    templates = dict(enumerate(templates[:10]))
     results: Dict[int, List[MatchTemplateMultipleResult]] = {}
     for digit, template in templates.items():
-        template = resize(template, height=img.shape[0])
+        template = imutils_resize(template, height=img.shape[0])
         results[digit] = matchTemplateMultiple(img, template, template_threshold)
     results = filter_digit_results(results, filter_threshold)
     result_x_digit_map = {}
@@ -140,20 +156,57 @@ def ocr_digits(
 
 
 def ocr_pure(img_masked: Mat):
-    templates = load_builtin_digit_template("GeoSansLight-Regular")
-    return ocr_digits(img_masked, templates, template_threshold=0.6, filter_threshold=3)
+    template = load_builtin_digit_template("default")
+    return ocr_digits(
+        img_masked, template.regular, template_threshold=0.6, filter_threshold=3
+    )
 
 
 def ocr_far_lost(img_masked: Mat):
-    templates = load_builtin_digit_template("GeoSansLight-Italic")
-    return ocr_digits(img_masked, templates, template_threshold=0.6, filter_threshold=3)
+    template = load_builtin_digit_template("default")
+    return ocr_digits(
+        img_masked, template.italic, template_threshold=0.6, filter_threshold=3
+    )
 
 
 def ocr_score(img_cropped: Mat):
-    templates = load_builtin_digit_template("GeoSansLight-Regular")
-    return ocr_digits(
-        img_cropped, templates, template_threshold=0.5, filter_threshold=10
-    )
+    templates = load_builtin_digit_template("default").regular
+    templates_dict = dict(enumerate(templates[:10]))
+
+    cnts = findContours(img_cropped.copy(), RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)
+    cnts = grab_contours(cnts)
+    rects = [boundingRect(cnt) for cnt in cnts]
+    rects = sorted(rects, key=lambda r: r[0])
+
+    # debug
+    # [rectangle(img, rect, (128, 128, 128), 2) for rect in rects]
+    # imshow("img", img)
+    # waitKey(0)
+
+    result = ""
+    for rect in rects:
+        x, y, w, h = rect
+        roi = img_cropped[y : y + h, x : x + w]
+
+        digit_results: Dict[int, float] = {}
+        for digit, template in templates_dict.items():
+            template = resize(template, roi.shape[::-1])
+            template_result = matchTemplate(roi, template, TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = minMaxLoc(template_result)
+            digit_results[digit] = max_val
+
+        digit_results = {k: v for k, v in digit_results.items() if v > 0.5}
+        if digit_results:
+            best_match_digit = max(digit_results, key=digit_results.get)
+            result += str(best_match_digit)
+    return int(result) if result else None
+
+    # return ocr_digits(
+    #     img_cropped,
+    #     template.regular,
+    #     template_threshold=0.5,
+    #     filter_threshold=10,
+    # )
 
 
 def ocr_max_recall(img_cropped: Mat):
