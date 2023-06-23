@@ -7,6 +7,7 @@ from .crop import *
 from .device import Device
 from .mask import *
 from .ocr import *
+from .utils import imread_unicode
 
 __all__ = [
     "process_digits_ocr_img",
@@ -72,7 +73,7 @@ class RecognizeResult:
 
 
 def recognize(img_filename: str, device: Device):
-    img = imread(img_filename)
+    img = imread_unicode(img_filename)
     img_hsv = cvtColor(img, COLOR_BGR2HSV)
 
     pure_roi = crop_to_pure(img_hsv, device)
