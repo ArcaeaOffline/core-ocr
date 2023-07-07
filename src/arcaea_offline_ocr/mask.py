@@ -1,5 +1,7 @@
-from cv2 import BORDER_CONSTANT, BORDER_ISOLATED, Mat, bitwise_or, dilate, inRange
+from cv2 import BORDER_CONSTANT, BORDER_ISOLATED, bitwise_or, dilate, inRange
 from numpy import array, uint8
+
+from .types import Mat
 
 __all__ = [
     "GRAY_MIN_HSV",

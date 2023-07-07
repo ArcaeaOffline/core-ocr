@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import Callable, Optional
 
-from cv2 import COLOR_BGR2HSV, GaussianBlur, Mat, cvtColor, imread
+from cv2 import COLOR_BGR2HSV, GaussianBlur, cvtColor, imread
 
 from .crop import *
 from .device import Device
 from .mask import *
 from .ocr import *
+from .types import Mat
 from .utils import imread_unicode
 
 __all__ = [
