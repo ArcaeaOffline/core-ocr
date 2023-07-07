@@ -1,6 +1,8 @@
-from cv2 import IMREAD_UNCHANGED, Mat, imdecode
+from cv2 import IMREAD_UNCHANGED, imdecode
 from numpy import fromfile as np_fromfile
 from numpy import uint8
+
+from .types import Mat
 
 
 def imread_unicode(filepath: str) -> Mat:

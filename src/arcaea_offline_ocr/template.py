@@ -11,7 +11,6 @@ from cv2 import (
     RETR_EXTERNAL,
     THRESH_BINARY_INV,
     TM_CCOEFF_NORMED,
-    Mat,
     boundingRect,
     cvtColor,
     destroyAllWindows,
@@ -34,6 +33,7 @@ from ._builtin_templates import (
     DEFAULT_REGULAR,
     DEFAULT_REGULAR_ERODED,
 )
+from .types import Mat
 
 __all__ = [
     "TemplateItem",

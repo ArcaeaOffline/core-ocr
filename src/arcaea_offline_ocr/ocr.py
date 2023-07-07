@@ -5,7 +5,6 @@ from cv2 import (
     CHAIN_APPROX_SIMPLE,
     RETR_EXTERNAL,
     TM_CCOEFF_NORMED,
-    Mat,
     boundingRect,
     findContours,
     imshow,
@@ -25,6 +24,7 @@ from .template import (
     load_builtin_digit_template,
     matchTemplateMultiple,
 )
+from .types import Mat
 
 __all__ = [
     "group_numbers",
