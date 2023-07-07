@@ -1,8 +1,7 @@
-from typing import Tuple
-
-from cv2 import Mat
+from typing import Any, Tuple
 
 from .device import Device
+from .types import Mat
 
 __all__ = [
     "crop_img",
