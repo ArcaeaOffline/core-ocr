@@ -4,6 +4,8 @@ from numpy import uint8
 
 from .types import Mat
 
+__all__ = ["imread_unicode"]
+
 
 def imread_unicode(filepath: str) -> Mat:
     # https://stackoverflow.com/a/57872297/16484891
