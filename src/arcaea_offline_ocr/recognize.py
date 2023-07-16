@@ -4,11 +4,14 @@ from typing import Callable, Optional
 from cv2 import COLOR_BGR2HSV, GaussianBlur, cvtColor, imread
 
 from .crop import *
-from .device import Device
+
+# from .device import Device
 from .mask import *
 from .ocr import *
 from .types import Mat
 from .utils import imread_unicode
+
+Device = None
 
 __all__ = [
     "process_digits_ocr_img",
