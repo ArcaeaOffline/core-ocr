@@ -36,7 +36,7 @@ def crop_black_edges(screenshot: Mat):
         left += 1
 
     for i in sorted(range(width), reverse=True):
-        column = cropped[:, width - i]
+        column = cropped[:, i]
         if i <= left + 1 or not is_black_edge(column, black_pixel):
             break
         right -= 1
@@ -48,7 +48,7 @@ def crop_black_edges(screenshot: Mat):
         top += 1
 
     for i in sorted(range(height), reverse=True):
-        row = cropped[height - i]
+        row = cropped[i]
         if i <= top + 1 or not is_black_edge(row, black_pixel):
             break
         bottom -= 1
