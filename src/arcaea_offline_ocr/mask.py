@@ -47,7 +47,7 @@ BYD_MIN_HSV = array([170, 50, 50], uint8)
 BYD_MAX_HSV = array([179, 210, 198], uint8)
 
 
-def mask_gray_new(__img_bgr: Mat):
+def mask_gray(__img_bgr: Mat):
     # bgr_value_equal_mask = all(__img_bgr[:, 1:] == __img_bgr[:, :-1], axis=1)
     bgr_value_equal_mask = max(__img_bgr, axis=2) - min(__img_bgr, axis=2) <= 5
     img_bgr = __img_bgr.copy()
@@ -57,17 +57,9 @@ def mask_gray_new(__img_bgr: Mat):
     return cv2.inRange(img_bgr, GRAY_MIN_BGR, GRAY_MAX_BGR)
 
 
-def mask_gray(img_hsv: Mat):
-    mask = cv2.inRange(img_hsv, GRAY_MIN_HSV, GRAY_MAX_HSV)
-    mask = cv2.dilate(mask, (2, 2))
-    return mask
-
-
 def mask_white(img_hsv: Mat):
     mask = cv2.inRange(img_hsv, WHITE_MIN_HSV, WHITE_MAX_HSV)
-    mask = cv2.dilate(
-        mask, (5, 5), borderType=cv2.BORDER_CONSTANT | cv2.BORDER_ISOLATED
-    )
+    mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)))
     return mask
 
 
