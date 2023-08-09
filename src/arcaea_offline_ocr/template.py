@@ -2,30 +2,8 @@ import pickle
 from base64 import b64decode
 from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 
-from cv2 import (
-    CHAIN_APPROX_SIMPLE,
-    COLOR_BGR2GRAY,
-    COLOR_GRAY2BGR,
-    FONT_HERSHEY_SIMPLEX,
-    IMREAD_GRAYSCALE,
-    RETR_EXTERNAL,
-    THRESH_BINARY_INV,
-    TM_CCOEFF_NORMED,
-    boundingRect,
-    cvtColor,
-    destroyAllWindows,
-    findContours,
-    imdecode,
-    imread,
-    imshow,
-    matchTemplate,
-    minMaxLoc,
-    putText,
-    rectangle,
-    threshold,
-    waitKey,
-)
-from numpy import ndarray
+import cv2
+import numpy as np
 
 from ._builtin_templates import (
     DEFAULT_ITALIC,
@@ -60,7 +38,7 @@ class DigitTemplate:
         return (
             isinstance(item, (list, tuple))
             and len(item) == 11
-            and all(isinstance(i, ndarray) for i in item)
+            and all(isinstance(i, np.ndarray) for i in item)
         )
 
     def __init__(self, regular, italic, regular_eroded, italic_eroded):
@@ -109,8 +87,8 @@ class MatchTemplateMultipleResult(TypedDict):
 def matchTemplateMultiple(
     src: Mat, template: Mat, threshold: float = 0.1
 ) -> List[MatchTemplateMultipleResult]:
-    template_result = matchTemplate(src, template, TM_CCOEFF_NORMED)
-    min_val, max_val, min_loc, max_loc = minMaxLoc(template_result)
+    template_result = cv2.matchTemplate(src, template, cv2.TM_CCOEFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(template_result)
     template_h, template_w = template.shape[:2]
     results = []
 
@@ -123,7 +101,7 @@ def matchTemplateMultiple(
     # CC BY-SA 4.0
     prev_min_val, prev_max_val, prev_min_loc, prev_max_loc = None, None, None, None
     while max_val > threshold:
-        min_val, max_val, min_loc, max_loc = minMaxLoc(template_result)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(template_result)
 
         # Prevent infinite loop. If those 4 values are the same as previous ones, break the loop.
         if (

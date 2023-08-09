@@ -1,7 +1,7 @@
 from math import floor
 from typing import Any, Tuple
 
-from numpy import all, array, count_nonzero
+import numpy as np
 
 from ...types import Mat
 from .definition import Device
@@ -59,6 +59,8 @@ def crop_to_title(screenshot: Mat, device: Device):
 
 def is_black_edge(list_of_pixels: Mat, black_pixel=None):
     if black_pixel is None:
-        black_pixel = array([0, 0, 0], list_of_pixels.dtype)
+        black_pixel = np.array([0, 0, 0], list_of_pixels.dtype)
     pixels = list_of_pixels.reshape([-1, 3])
-    return count_nonzero(all(pixels < black_pixel, axis=1)) > floor(len(pixels) * 0.6)
+    return np.count_nonzero(all(pixels < black_pixel, axis=1)) > floor(
+        len(pixels) * 0.6
+    )

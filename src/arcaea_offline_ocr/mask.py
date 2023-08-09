@@ -1,5 +1,5 @@
 import cv2
-from numpy import array, max, min, uint8
+import numpy as np
 
 from .types import Mat
 
@@ -25,33 +25,33 @@ __all__ = [
     "mask_rating_class",
 ]
 
-GRAY_MIN_HSV = array([0, 0, 70], uint8)
-GRAY_MAX_HSV = array([0, 0, 200], uint8)
+GRAY_MIN_HSV = np.array([0, 0, 70], np.uint8)
+GRAY_MAX_HSV = np.array([0, 0, 200], np.uint8)
 
-GRAY_MIN_BGR = array([50] * 3, uint8)
-GRAY_MAX_BGR = array([160] * 3, uint8)
+GRAY_MIN_BGR = np.array([50] * 3, np.uint8)
+GRAY_MAX_BGR = np.array([160] * 3, np.uint8)
 
-WHITE_MIN_HSV = array([0, 0, 240], uint8)
-WHITE_MAX_HSV = array([179, 10, 255], uint8)
+WHITE_MIN_HSV = np.array([0, 0, 240], np.uint8)
+WHITE_MAX_HSV = np.array([179, 10, 255], np.uint8)
 
-PST_MIN_HSV = array([100, 50, 80], uint8)
-PST_MAX_HSV = array([100, 255, 255], uint8)
+PST_MIN_HSV = np.array([100, 50, 80], np.uint8)
+PST_MAX_HSV = np.array([100, 255, 255], np.uint8)
 
-PRS_MIN_HSV = array([43, 40, 75], uint8)
-PRS_MAX_HSV = array([50, 155, 190], uint8)
+PRS_MIN_HSV = np.array([43, 40, 75], np.uint8)
+PRS_MAX_HSV = np.array([50, 155, 190], np.uint8)
 
-FTR_MIN_HSV = array([149, 30, 0], uint8)
-FTR_MAX_HSV = array([155, 181, 150], uint8)
+FTR_MIN_HSV = np.array([149, 30, 0], np.uint8)
+FTR_MAX_HSV = np.array([155, 181, 150], np.uint8)
 
-BYD_MIN_HSV = array([170, 50, 50], uint8)
-BYD_MAX_HSV = array([179, 210, 198], uint8)
+BYD_MIN_HSV = np.array([170, 50, 50], np.uint8)
+BYD_MAX_HSV = np.array([179, 210, 198], np.uint8)
 
 
 def mask_gray(__img_bgr: Mat):
     # bgr_value_equal_mask = all(__img_bgr[:, 1:] == __img_bgr[:, :-1], axis=1)
     bgr_value_equal_mask = max(__img_bgr, axis=2) - min(__img_bgr, axis=2) <= 5
     img_bgr = __img_bgr.copy()
-    img_bgr[~bgr_value_equal_mask] = array([0, 0, 0], __img_bgr.dtype)
+    img_bgr[~bgr_value_equal_mask] = np.array([0, 0, 0], __img_bgr.dtype)
     img_bgr = cv2.erode(img_bgr, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)))
     img_bgr = cv2.dilate(img_bgr, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1)))
     return cv2.inRange(img_bgr, GRAY_MIN_BGR, GRAY_MAX_BGR)

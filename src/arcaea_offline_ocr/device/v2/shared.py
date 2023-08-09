@@ -1,4 +1,4 @@
-from cv2 import MORPH_CROSS, MORPH_ELLIPSE, MORPH_RECT, getStructuringElement
+from cv2 import MORPH_RECT, getStructuringElement
 
 PFL_DENOISE_KERNEL = getStructuringElement(MORPH_RECT, [2, 2])
 PFL_ERODE_KERNEL = getStructuringElement(MORPH_RECT, [3, 3])

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, Optional
 
-from cv2 import COLOR_BGR2HSV, GaussianBlur, cvtColor, imread
+import cv2
 
 from .crop import *
 
@@ -29,13 +29,13 @@ __all__ = [
 
 def process_digits_ocr_img(img_hsv_cropped: Mat, mask=Callable[[Mat], Mat]):
     img_hsv_cropped = mask(img_hsv_cropped)
-    img_hsv_cropped = GaussianBlur(img_hsv_cropped, (3, 3), 0)
+    img_hsv_cropped = cv2.GaussianBlur(img_hsv_cropped, (3, 3), 0)
     return img_hsv_cropped
 
 
 def process_tesseract_ocr_img(img_hsv_cropped: Mat, mask=Callable[[Mat], Mat]):
     img_hsv_cropped = mask(img_hsv_cropped)
-    img_hsv_cropped = GaussianBlur(img_hsv_cropped, (1, 1), 0)
+    img_hsv_cropped = cv2.GaussianBlur(img_hsv_cropped, (1, 1), 0)
     return img_hsv_cropped
 
 
@@ -78,7 +78,7 @@ class RecognizeResult:
 
 def recognize(img_filename: str, device: Device):
     img = imread_unicode(img_filename)
-    img_hsv = cvtColor(img, COLOR_BGR2HSV)
+    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     pure_roi = crop_to_pure(img_hsv, device)
     pure = recognize_pure(pure_roi)

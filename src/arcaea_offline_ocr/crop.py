@@ -1,7 +1,7 @@
 from math import floor
 from typing import Tuple
 
-from numpy import all, array, count_nonzero
+import numpy as np
 
 from .types import Mat
 
@@ -15,14 +15,16 @@ def crop_xywh(mat: Mat, rect: Tuple[int, int, int, int]):
 
 def is_black_edge(list_of_pixels: Mat, black_pixel=None):
     if black_pixel is None:
-        black_pixel = array([0, 0, 0], list_of_pixels.dtype)
+        black_pixel = np.array([0, 0, 0], list_of_pixels.dtype)
     pixels = list_of_pixels.reshape([-1, 3])
-    return count_nonzero(all(pixels < black_pixel, axis=1)) > floor(len(pixels) * 0.6)
+    return np.count_nonzero(all(pixels < black_pixel, axis=1)) > floor(
+        len(pixels) * 0.6
+    )
 
 
 def crop_black_edges(screenshot: Mat):
     cropped = screenshot.copy()
-    black_pixel = array([50, 50, 50], screenshot.dtype)
+    black_pixel = np.array([50, 50, 50], screenshot.dtype)
     height, width = screenshot.shape[:2]
     left = 0
     right = width
