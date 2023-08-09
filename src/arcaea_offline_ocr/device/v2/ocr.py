@@ -1,31 +1,18 @@
-from typing import Optional
-
-import attrs
 import cv2
 import numpy as np
 
 from ...mask import mask_byd, mask_ftr, mask_gray, mask_prs, mask_pst, mask_white
 from ...ocr import ocr_digits_knn_model
 from ...types import Mat, cv2_ml_KNearest
+from ..shared import DeviceOcrResult
 from .find import find_digits
 from .rois import DeviceV2Rois
 
 
-@attrs.define
-class DeviceV2OcrResult:
-    pure: int
-    far: int
-    lost: int
-    score: int
-    rating_class: int
-    max_recall: int
-    title: Optional[str]
-
-
 class DeviceV2Ocr:
-    def __init__(self):
-        self.__rois = None
-        self.__knn_model = None
+    def __init__(self, rois: DeviceV2Rois, knn_model: cv2_ml_KNearest):
+        self.__rois = rois
+        self.__knn_model = knn_model
 
     @property
     def rois(self):

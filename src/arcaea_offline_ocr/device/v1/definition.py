@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Tuple
 
-__all__ = ["Device"]
+__all__ = ["DeviceV1"]
 
 
 @dataclass(kw_only=True)
-class Device:
+class DeviceV1:
     version: int
     uuid: str
     name: str
