@@ -38,7 +38,7 @@ class Sizes:
 
     @property
     def PFL_WIDTH(self):
-        return self.apply_factor(150)
+        return self.apply_factor(76)
 
     @property
     def PFL_FONT_PX(self):
