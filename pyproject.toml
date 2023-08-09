@@ -10,10 +10,12 @@ description = "Extract Arcaea play result from your screenshot."
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-  "imutils==0.5.4",
+  "attrs==23.1.0",
+  "black==23.3.0",
   "numpy==1.24.3",
-  "opencv-python==4.7.0.72",
-  "pytesseract==0.3.10",
+  "opencv-python==4.6.0.66",
+  "paddleocr==2.7.0.1",
+  "pre-commit==3.3.3",
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -23,9 +25,6 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/283375/arcaea-offline-ocr"
 "Bug Tracker" = "https://github.com/283375/arcaea-offline-ocr/issues"
-
-[tool.black]
-extend-exclude = 'src/arcaea_offline_ocr/_builtin_templates.py'
 
 [tool.isort]
 profile = "black"
