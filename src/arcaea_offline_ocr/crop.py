@@ -17,7 +17,7 @@ def is_black_edge(list_of_pixels: Mat, black_pixel=None):
     if black_pixel is None:
         black_pixel = np.array([0, 0, 0], list_of_pixels.dtype)
     pixels = list_of_pixels.reshape([-1, 3])
-    return np.count_nonzero(all(pixels < black_pixel, axis=1)) > floor(
+    return np.count_nonzero(np.all(pixels < black_pixel, axis=1)) > floor(
         len(pixels) * 0.6
     )
 
