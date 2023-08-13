@@ -98,10 +98,10 @@ class Sizes:
 
 
 class DeviceV2Rois:
-    def __init__(self, device: DeviceV2):
+    def __init__(self, device: DeviceV2, img: Mat):
         self.device = device
         self.sizes = Sizes(self.device.factor)
-        self.__img = None
+        self.__img = img
 
     @staticmethod
     def construct_int_xywh_rect(x, y, w, h) -> XYWHRect:
