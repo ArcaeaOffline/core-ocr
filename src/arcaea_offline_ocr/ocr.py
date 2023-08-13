@@ -1,3 +1,4 @@
+import math
 from typing import Tuple
 
 import cv2
@@ -13,6 +14,28 @@ __all__ = [
     "ocr_digits_by_contour_samples",
     "ocr_digits_by_contour_knn",
 ]
+
+
+def resize_fill_sqaure(img, target: int = 20):
+    h, w = img.shape[:2]
+    if h > w:
+        new_h = target
+        new_w = round(w * (target / h))
+    else:
+        new_w = target
+        new_h = round(h * (target / w))
+    resized = cv2.resize(img, (new_w, new_h))
+
+    border_size = math.ceil((max(new_w, new_h) - min(new_w, new_h)) / 2)
+    if new_w < new_h:
+        resized = cv2.copyMakeBorder(
+            resized, 0, 0, border_size, border_size, cv2.BORDER_CONSTANT
+        )
+    else:
+        resized = cv2.copyMakeBorder(
+            resized, border_size, border_size, 0, 0, cv2.BORDER_CONSTANT
+        )
+    return cv2.resize(resized, (target, target))
 
 
 def preprocess_hog(digit_rois):
@@ -42,11 +65,12 @@ def preprocess_hog(digit_rois):
     return np.float32(samples)
 
 
-def ocr_digits_by_contour_samples(__roi_gray: Mat, size: Tuple[int, int]):
+def ocr_digits_by_contour_samples(__roi_gray: Mat, size: int):
     roi = __roi_gray.copy()
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     rects = sorted([cv2.boundingRect(c) for c in contours], key=lambda r: r[0])
-    digit_rois = [cv2.resize(crop_xywh(roi, rect), size) for rect in rects]
+    # digit_rois = [cv2.resize(crop_xywh(roi, rect), size) for rect in rects]
+    digit_rois = [resize_fill_sqaure(crop_xywh(roi, rect), size) for rect in rects]
     return preprocess_hog(digit_rois)
 
 
@@ -55,7 +79,7 @@ def ocr_digits_by_contour_knn(
     knn_model: cv2_ml_KNearest,
     *,
     k=4,
-    size: Tuple[int, int] = (20, 20),
+    size: int = 20,
 ) -> int:
     samples = ocr_digits_by_contour_samples(__roi_gray, size)
     _, results, _, _ = knn_model.findNearest(samples, k)
