@@ -44,7 +44,7 @@ def preprocess_hog(digit_rois):
 
 def ocr_digits_by_contour_samples(__roi_gray: Mat, size: Tuple[int, int]):
     roi = __roi_gray.copy()
-    contours = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     rects = sorted([cv2.boundingRect(c) for c in contours], key=lambda r: r[0])
     digit_rois = [cv2.resize(crop_xywh(roi, rect), size) for rect in rects]
     return preprocess_hog(digit_rois)

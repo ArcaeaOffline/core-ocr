@@ -49,7 +49,7 @@ BYD_MAX_HSV = np.array([179, 210, 198], np.uint8)
 
 def mask_gray(__img_bgr: Mat):
     # bgr_value_equal_mask = all(__img_bgr[:, 1:] == __img_bgr[:, :-1], axis=1)
-    bgr_value_equal_mask = max(__img_bgr, axis=2) - min(__img_bgr, axis=2) <= 5
+    bgr_value_equal_mask = np.max(__img_bgr, axis=2) - np.min(__img_bgr, axis=2) <= 5
     img_bgr = __img_bgr.copy()
     img_bgr[~bgr_value_equal_mask] = np.array([0, 0, 0], __img_bgr.dtype)
     img_bgr = cv2.erode(img_bgr, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)))
