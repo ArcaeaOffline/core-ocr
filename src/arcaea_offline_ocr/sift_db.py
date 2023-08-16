@@ -16,6 +16,9 @@ class SIFTDatabase:
         self.__descriptors = []
         self.__size = None
 
+        self.__sift = cv2.SIFT_create()
+        self.__bf_matcher = cv2.BFMatcher()
+
         if load:
             self.load_db()
 
@@ -42,6 +45,14 @@ class SIFTDatabase:
     @size.setter
     def size(self, value: Tuple[int, int]):
         self.__size = value
+
+    @property
+    def sift(self):
+        return self.__sift
+
+    @property
+    def bf_matcher(self):
+        return self.__bf_matcher
 
     def load_db(self):
         conn = sqlite3.connect(self.db_path)
@@ -75,9 +86,12 @@ class SIFTDatabase:
         self,
         __img: Mat,
         *,
-        sift=cv2.SIFT_create(),
-        bf: cv2.BFMatcher = cv2.BFMatcher(),
+        sift=None,
+        bf=None,
     ) -> Tuple[str, float]:
+        sift = sift or self.sift
+        bf = bf or self.bf_matcher
+
         img = __img.copy()
         if self.size is not None:
             img = cv2.resize(img, self.size)
