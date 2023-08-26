@@ -11,7 +11,7 @@ from .types import Mat, cv2_ml_KNearest
 
 __all__ = [
     "preprocess_hog",
-    "ocr_digits_by_contour_samples",
+    "ocr_digits_by_contour_get_samples",
     "ocr_digits_by_contour_knn",
 ]
 
@@ -65,7 +65,14 @@ def preprocess_hog(digit_rois):
     return np.float32(samples)
 
 
-def ocr_digits_by_contour_samples(__roi_gray: Mat, size: int):
+def ocr_digit_samples_knn(__samples, knn_model: cv2_ml_KNearest, k: int = 4):
+    _, results, _, _ = knn_model.findNearest(__samples, k)
+    result_list = [int(r) for r in results.ravel()]
+    result_str = "".join(str(r) for r in result_list if r > -1)
+    return int(result_str)
+
+
+def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
     roi = __roi_gray.copy()
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     rects = sorted([cv2.boundingRect(c) for c in contours], key=lambda r: r[0])
@@ -81,10 +88,8 @@ def ocr_digits_by_contour_knn(
     k=4,
     size: int = 20,
 ) -> int:
-    samples = ocr_digits_by_contour_samples(__roi_gray, size)
-    _, results, _, _ = knn_model.findNearest(samples, k)
-    results = [str(int(i)) for i in results.ravel()]
-    return int("".join(results))
+    samples = ocr_digits_by_contour_get_samples(__roi_gray, size)
+    return ocr_digit_samples_knn(samples, knn_model, k)
 
 
 def ocr_rating_class(roi_hsv: Mat):

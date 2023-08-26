@@ -38,6 +38,10 @@ class ChieriBotV4ComponentRois:
         return apply_factor((35, 10, 430, 50), self.factor)
 
     @property
+    def jacket_rect(self):
+        return apply_factor((263, 0, 239, 239), self.factor)
+
+    @property
     def score_rect(self):
         return apply_factor((30, 60, 270, 55), self.factor)
 
