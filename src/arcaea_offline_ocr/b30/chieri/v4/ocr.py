@@ -13,9 +13,6 @@ from ...shared import B30OcrResultItem
 from .colors import *
 from .rois import ChieriBotV4Rois
 
-# if TYPE_CHECKING:
-#     from paddleocr import PaddleOCR
-
 
 class ChieriBotV4Ocr:
     def __init__(
