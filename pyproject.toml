@@ -6,10 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "arcaea-offline-ocr"
 version = "0.1.0"
 authors = [{ name = "283375", email = "log_283375@163.com" }]
-description = "Extract Arcaea play result from your screenshot."
+description = "Extract your Arcaea play result from screenshot."
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["attrs==23.1.0", "numpy==1.24.3", "opencv-python==4.6.0.66"]
+dependencies = ["attrs==23.1.0", "numpy==1.25.2", "opencv-python==4.8.0.76"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3",
