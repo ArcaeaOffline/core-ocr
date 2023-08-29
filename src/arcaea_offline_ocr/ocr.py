@@ -36,6 +36,9 @@ class FixRects:
         new_rects = []
         consumed_rects = []
         for rect in rects:
+            if rect in consumed_rects:
+                continue
+
             x, y, w, h = rect
             # grab those small rects
             if not img_height * 0.1 <= h <= img_height * 0.6:
