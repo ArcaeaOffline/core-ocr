@@ -68,7 +68,7 @@ class FixRects:
         return return_rects
 
 
-def resize_fill_sqaure(img, target: int = 20):
+def resize_fill_square(img: Mat, target: int = 20):
     h, w = img.shape[:2]
     if h > w:
         new_h = target
@@ -129,7 +129,7 @@ def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     rects = sorted([cv2.boundingRect(c) for c in contours], key=lambda r: r[0])
     # digit_rois = [cv2.resize(crop_xywh(roi, rect), size) for rect in rects]
-    digit_rois = [resize_fill_sqaure(crop_xywh(roi, rect), size) for rect in rects]
+    digit_rois = [resize_fill_square(crop_xywh(roi, rect), size) for rect in rects]
     return preprocess_hog(digit_rois)
 
 
