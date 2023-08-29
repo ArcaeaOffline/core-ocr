@@ -263,3 +263,23 @@ class DeviceV2Rois:
     @property
     def cover(self):
         return crop_xywh(self.img, self.cover_rect)
+
+
+class DeviceV2AutoRois(DeviceV2Rois):
+    @staticmethod
+    def get_factor(width: int, height: int):
+        ratio = width / height
+        return ((width / 16) * 9) / 720 if ratio < (16 / 9) else height / 720
+
+    def __init__(self, img: Mat):
+        factor = self.get_factor(img.shape[1], img.shape[0])
+        self.sizes = Sizes(factor)
+        self.__img = img
+
+    @property
+    def img(self):
+        return self.__img
+
+    @img.setter
+    def img(self, img: Mat):
+        self.__img = crop_black_edges(img)
