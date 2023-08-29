@@ -7,7 +7,7 @@ from ...ocr import ocr_digits_by_contour_knn
 from ...sift_db import SIFTDatabase
 from ...types import Mat, cv2_ml_KNearest
 from ..shared import DeviceOcrResult
-from .find import find_digits_preprocess
+from .preprocess import find_digits_preprocess
 from .rois import DeviceV2Rois
 from .shared import MAX_RECALL_CLOSE_KERNEL
 
