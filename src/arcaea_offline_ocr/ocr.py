@@ -181,7 +181,10 @@ def ocr_digit_samples_knn(__samples, knn_model: cv2_ml_KNearest, k: int = 4):
 def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
     roi = __roi_gray.copy()
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    rects = sorted([cv2.boundingRect(c) for c in contours], key=lambda r: r[0])
+    rects = [cv2.boundingRect(c) for c in contours]
+    rects = FixRects.connect_broken(rects, roi.shape[1], roi.shape[0])
+    rects = FixRects.split_connected(roi, rects)
+    rects = sorted(rects, key=lambda r: r[0])
     # digit_rois = [cv2.resize(crop_xywh(roi, rect), size) for rect in rects]
     digit_rois = [resize_fill_square(crop_xywh(roi, rect), size) for rect in rects]
     return preprocess_hog(digit_rois)

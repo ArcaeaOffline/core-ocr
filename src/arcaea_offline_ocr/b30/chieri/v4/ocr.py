@@ -1,11 +1,11 @@
 from math import floor
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
 
 from ....crop import crop_xywh
-from ....ocr import ocr_digits_by_contour_knn, preprocess_hog
+from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
 from ....sift_db import SIFTDatabase
 from ....types import Mat, cv2_ml_KNearest
 from ....utils import construct_int_xywh_rect
@@ -212,10 +212,12 @@ class ChieriBotV4Ocr:
                 digit_contours, _ = cv2.findContours(
                     roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
                 )
-                digit_rects = sorted(
-                    [cv2.boundingRect(c) for c in digit_contours],
-                    key=lambda r: r[0],
+                digit_rects = [cv2.boundingRect(c) for c in digit_contours]
+                digit_rects = FixRects.connect_broken(
+                    digit_rects, roi.shape[1], roi.shape[0]
                 )
+                digit_rects = FixRects.split_connected(roi, digit_rects)
+                digit_rects = sorted(digit_rects, key=lambda r: r[0])
                 digits = []
                 for digit_rect in digit_rects:
                     digit = crop_xywh(roi, digit_rect)
