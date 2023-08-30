@@ -70,6 +70,57 @@ class FixRects:
         return_rects.extend(new_rects)
         return return_rects
 
+    @staticmethod
+    def split_connected(
+        img_masked: Mat,
+        rects: Sequence[Tuple[int, int, int, int]],
+        rect_wh_ratio: float = 1.05,
+        width_range_ratio: float = 0.1,
+    ):
+        connected_rects = []
+        new_rects = []
+        for rect in rects:
+            rx, ry, rw, rh = rect
+            if rw / rh > rect_wh_ratio:
+                # consider this is a connected contour
+                connected_rects.append(rect)
+
+                # find the thinnest part
+                border_ignore = round(rw * width_range_ratio)
+                img_cropped = crop_xywh(
+                    img_masked,
+                    (border_ignore, ry, rw - border_ignore, rh),
+                )
+                white_pixels = {}  # dict[x, white_pixel_number]
+                for i in range(img_cropped.shape[1]):
+                    col = img_cropped[:, i]
+                    white_pixels[rx + border_ignore + i] = np.count_nonzero(col > 200)
+                least_white_pixels = min(list(white_pixels.values()))
+                x_values = [
+                    x
+                    for x, pixel in white_pixels.items()
+                    if pixel == least_white_pixels
+                ]
+                # select only middle values
+                x_mean = np.mean(x_values)
+                x_std = np.std(x_values)
+                x_values = [
+                    x
+                    for x in x_values
+                    if x_mean - x_std * 1.5 <= x <= x_mean + x_std * 1.5
+                ]
+                x_mid = round(np.median(x_values))
+
+                # split the rect
+                new_rects.extend(
+                    [(rx, ry, x_mid, rh), (rx + x_mid, ry, rw - x_mid, rh)]
+                )
+
+        return_rects = deepcopy(rects)
+        return_rects = [r for r in rects if r not in connected_rects]
+        return_rects.extend(new_rects)
+        return return_rects
+
 
 def resize_fill_square(img: Mat, target: int = 20):
     h, w = img.shape[:2]
