@@ -95,7 +95,7 @@ class FixRects:
                 for i in range(img_cropped.shape[1]):
                     col = img_cropped[:, i]
                     white_pixels[rx + border_ignore + i] = np.count_nonzero(col > 200)
-                least_white_pixels = min(list(white_pixels.values()))
+                least_white_pixels = min(v for v in white_pixels.values() if v > 0)
                 x_values = [
                     x
                     for x, pixel in white_pixels.items()
@@ -113,7 +113,7 @@ class FixRects:
 
                 # split the rect
                 new_rects.extend(
-                    [(rx, ry, x_mid, rh), (rx + x_mid, ry, rw - x_mid, rh)]
+                    [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)]
                 )
 
         return_rects = deepcopy(rects)
@@ -175,7 +175,7 @@ def ocr_digit_samples_knn(__samples, knn_model: cv2_ml_KNearest, k: int = 4):
     _, results, _, _ = knn_model.findNearest(__samples, k)
     result_list = [int(r) for r in results.ravel()]
     result_str = "".join(str(r) for r in result_list if r > -1)
-    return int(result_str)
+    return int(result_str) if result_str else 0
 
 
 def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
