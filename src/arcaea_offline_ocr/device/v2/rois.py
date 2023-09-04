@@ -274,7 +274,8 @@ class DeviceV2AutoRois(DeviceV2Rois):
     def __init__(self, img: Mat):
         factor = self.get_factor(img.shape[1], img.shape[0])
         self.sizes = Sizes(factor)
-        self.__img = img
+        self.__img = None
+        self.img = img
 
     @property
     def img(self):
