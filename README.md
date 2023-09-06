@@ -3,32 +3,26 @@
 ## Example
 
 ```py
-import json
-import pytesseract
+from arcaea_offline_ocr.device.v2.rois import DeviceV2AutoRois
+from arcaea_offline_ocr.device.v2.ocr import DeviceV2Ocr
+from arcaea_offline_ocr.sift_db import SIFTDatabase
+from arcaea_offline_ocr.utils import imread_unicode
+import cv2
 
-pytesseract.pytesseract.tesseract_cmd = r'D:/path/to/your/tesseract.exe'
+knn_model = cv2.ml.KNearest_load(r'/path/to/knn/model')
+sift_db = SIFTDatabase(r'/path/to/sift/database.db')
 
-from arcaea_offline_ocr import device, recognize
-
-with open("./assets/devices.json", "r", encoding="utf-8") as file:
-    my_device = device.Device.from_json_object(json.loads(file.read())[0])
-print(recognize.recognize('./assets/screenshots/RMX3370_byd_1.jpg', my_device))
+rois = DeviceV2AutoRois(imread_unicode(r'/path/to/your/screenshot.jpg'))  # any format that opencv-python supports
+ocr = DeviceV2Ocr(knn_model, sift_db)
+result = ocr.ocr(rois)
+print(result)
 ```
 
-![RMX_3370_byd_1.jpg](./assets/screenshots/RMX3370_byd_1.jpg "Screenshot of Arcaea play result: RMX_3370_byd_1.jpg")
-
-```
-RecognizeResult(pure=38, far=2, lost=7, score=347938, max_recall=21, rating_class=3, title='Kanagawa Cybe')
-```
-
-<hr>
-
-```py
-print(recognize.recognize('./assets/screenshots/RMX3370_ftr_1.jpg', my_device))
+```sh
+$ python example.py
+DeviceOcrResult(rating_class=2, pure=1371, far=62, lost=34, score=9558078, max_recall=330, song_id='abstrusedilemma', title=None, clear_type=None)
 ```
 
-![RMX_3370_ftr_1.jpg](./assets/screenshots/RMX3370_ftr_1.jpg "Screenshot of Arcaea play result: RMX_3370_ftr_1.jpg")
+## Credits
 
-```
-RecognizeResult(pure=1344, far=42, lost=6, score=9807234, max_recall=490, rating_class=2, title='To the Milkv')
-```
+[283375/image-sift-database](https://github.com/283375/image-sift-database)
