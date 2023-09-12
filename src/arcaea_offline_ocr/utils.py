@@ -11,10 +11,10 @@ from .types import Mat, XYWHRect
 __all__ = ["imread_unicode"]
 
 
-def imread_unicode(filepath: str) -> Mat:
+def imread_unicode(filepath: str, flags: int = cv2.IMREAD_UNCHANGED) -> Mat:
     # https://stackoverflow.com/a/57872297/16484891
     # CC BY-SA 4.0
-    return cv2.imdecode(np.fromfile(filepath, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    return cv2.imdecode(np.fromfile(filepath, dtype=np.uint8), flags)
 
 
 def construct_int_xywh_rect(
