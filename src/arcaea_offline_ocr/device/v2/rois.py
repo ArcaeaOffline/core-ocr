@@ -217,7 +217,7 @@ class DeviceV2Rois:
             self.hor_mid
             + self.sizes.COVER_RIGHT_FROM_HOR_MID
             - self.sizes.COVER_WIDTH
-            - 25
+            - 25 * self.sizes.factor
         )
         return self.construct_int_xywh_rect(
             x=x,
