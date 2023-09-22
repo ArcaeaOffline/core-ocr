@@ -85,8 +85,8 @@ class DeviceV2Ocr:
         return ocr_digit_samples_knn(samples, self.knn_model)
 
     def ocr_song_id(self, rois: DeviceV2Rois):
-        cover = cv2.cvtColor(rois.cover, cv2.COLOR_BGR2GRAY)
-        return self.sift_db.lookup_img(cover)[0]
+        jacket = cv2.cvtColor(rois.jacket, cv2.COLOR_BGR2GRAY)
+        return self.sift_db.lookup_img(jacket)[0]
 
     def ocr_rating_class(self, rois: DeviceV2Rois):
         roi = cv2.cvtColor(rois.max_recall_rating_class, cv2.COLOR_BGR2HSV)

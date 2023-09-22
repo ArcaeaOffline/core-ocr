@@ -15,6 +15,87 @@ def apply_factor(num: Union[int, float], factor: float):
 
 class Sizes:
     def __init__(self, factor: float):
+        raise NotImplementedError()
+
+    @property
+    def TOP_BAR_HEIGHT(self):
+        ...
+
+    @property
+    def SCORE_PANEL(self) -> Tuple[int, int]:
+        ...
+
+    @property
+    def PFL_TOP_FROM_VMID(self):
+        ...
+
+    @property
+    def PFL_LEFT_FROM_HMID(self):
+        ...
+
+    @property
+    def PFL_WIDTH(self):
+        ...
+
+    @property
+    def PFL_FONT_PX(self):
+        ...
+
+    @property
+    def PURE_FAR_GAP(self):
+        ...
+
+    @property
+    def FAR_LOST_GAP(self):
+        ...
+
+    @property
+    def SCORE_BOTTOM_FROM_VMID(self):
+        ...
+
+    @property
+    def SCORE_FONT_PX(self):
+        ...
+
+    @property
+    def SCORE_WIDTH(self):
+        ...
+
+    @property
+    def JACKET_RIGHT_FROM_HOR_MID(self):
+        ...
+
+    @property
+    def JACKET_WIDTH(self):
+        ...
+
+    @property
+    def MR_RT_RIGHT_FROM_HMID(self):
+        ...
+
+    @property
+    def MR_RT_WIDTH(self):
+        ...
+
+    @property
+    def MR_RT_HEIGHT(self):
+        ...
+
+    @property
+    def TITLE_BOTTOM_FROM_VMID(self):
+        ...
+
+    @property
+    def TITLE_FONT_PX(self):
+        ...
+
+    @property
+    def TITLE_WIDTH_RIGHT(self):
+        ...
+
+
+class SizesV1(Sizes):
+    def __init__(self, factor: float):
         self.factor = factor
 
     def apply_factor(self, num):
@@ -29,11 +110,11 @@ class Sizes:
         return tuple(self.apply_factor(num) for num in [485, 239])
 
     @property
-    def PFL_TOP_FROM_VER_MID(self):
+    def PFL_TOP_FROM_VMID(self):
         return self.apply_factor(135)
 
     @property
-    def PFL_LEFT_FROM_HOR_MID(self):
+    def PFL_LEFT_FROM_HMID(self):
         return self.apply_factor(5)
 
     @property
@@ -53,7 +134,7 @@ class Sizes:
         return self.apply_factor(10)
 
     @property
-    def SCORE_BOTTOM_FROM_VER_MID(self):
+    def SCORE_BOTTOM_FROM_VMID(self):
         return self.apply_factor(-50)
 
     @property
@@ -65,27 +146,27 @@ class Sizes:
         return self.apply_factor(280)
 
     @property
-    def COVER_RIGHT_FROM_HOR_MID(self):
+    def JACKET_RIGHT_FROM_HOR_MID(self):
         return self.apply_factor(-235)
 
     @property
-    def COVER_WIDTH(self):
+    def JACKET_WIDTH(self):
         return self.apply_factor(375)
 
     @property
-    def MAX_RECALL_RATING_CLASS_RIGHT_FROM_HOR_MID(self):
+    def MR_RT_RIGHT_FROM_HMID(self):
         return self.apply_factor(-300)
 
     @property
-    def MAX_RECALL_RATING_CLASS_WIDTH(self):
+    def MR_RT_WIDTH(self):
         return self.apply_factor(275)
 
     @property
-    def MAX_RECALL_RATING_CLASS_HEIGHT(self):
+    def MR_RT_HEIGHT(self):
         return self.apply_factor(75)
 
     @property
-    def TITLE_BOTTOM_FROM_VER_MID(self):
+    def TITLE_BOTTOM_FROM_VMID(self):
         return self.apply_factor(-265)
 
     @property
@@ -100,7 +181,7 @@ class Sizes:
 class DeviceV2Rois:
     def __init__(self, device: DeviceV2, img: Mat):
         self.device = device
-        self.sizes = Sizes(self.device.factor)
+        self.sizes = SizesV1(self.device.factor)
         self.__img = img
 
     @staticmethod
@@ -122,7 +203,7 @@ class DeviceV2Rois:
         return self.img.shape[0]
 
     @property
-    def ver_mid(self):
+    def vmid(self):
         return self.h / 2
 
     @property
@@ -130,25 +211,25 @@ class DeviceV2Rois:
         return self.img.shape[1]
 
     @property
-    def hor_mid(self):
+    def hmid(self):
         return self.w / 2
 
     @property
-    def h_fixed(self):
+    def h_without_top_bar(self):
         """img_height -= top_bar_height"""
         return self.h - self.sizes.TOP_BAR_HEIGHT
 
     @property
-    def h_fixed_mid(self):
-        return self.sizes.TOP_BAR_HEIGHT + self.h_fixed / 2
+    def h_without_top_bar_mid(self):
+        return self.sizes.TOP_BAR_HEIGHT + self.h_without_top_bar / 2
 
     @property
     def pfl_top(self):
-        return self.h_fixed_mid + self.sizes.PFL_TOP_FROM_VER_MID
+        return self.h_without_top_bar_mid + self.sizes.PFL_TOP_FROM_VMID
 
     @property
     def pfl_left(self):
-        return self.hor_mid + self.sizes.PFL_LEFT_FROM_HOR_MID
+        return self.hmid + self.sizes.PFL_LEFT_FROM_HMID
 
     @property
     def pure_rect(self):
@@ -197,10 +278,10 @@ class DeviceV2Rois:
     @property
     def score_rect(self):
         return self.construct_int_xywh_rect(
-            x=self.hor_mid - (self.sizes.SCORE_WIDTH / 2),
+            x=self.hmid - (self.sizes.SCORE_WIDTH / 2),
             y=(
-                self.h_fixed_mid
-                + self.sizes.SCORE_BOTTOM_FROM_VER_MID
+                self.h_without_top_bar_mid
+                + self.sizes.SCORE_BOTTOM_FROM_VMID
                 - self.sizes.SCORE_FONT_PX
             ),
             w=self.sizes.SCORE_WIDTH,
@@ -214,20 +295,20 @@ class DeviceV2Rois:
     @property
     def max_recall_rating_class_rect(self):
         x = (
-            self.hor_mid
-            + self.sizes.COVER_RIGHT_FROM_HOR_MID
-            - self.sizes.COVER_WIDTH
+            self.hmid
+            + self.sizes.JACKET_RIGHT_FROM_HOR_MID
+            - self.sizes.JACKET_WIDTH
             - 25 * self.sizes.factor
         )
         return self.construct_int_xywh_rect(
             x=x,
             y=(
-                self.h_fixed_mid
+                self.h_without_top_bar_mid
                 - self.sizes.SCORE_PANEL[1] / 2
-                - self.sizes.MAX_RECALL_RATING_CLASS_HEIGHT
+                - self.sizes.MR_RT_HEIGHT
             ),
-            w=self.sizes.MAX_RECALL_RATING_CLASS_WIDTH,
-            h=self.sizes.MAX_RECALL_RATING_CLASS_HEIGHT,
+            w=self.sizes.MR_RT_WIDTH,
+            h=self.sizes.MR_RT_HEIGHT,
         )
 
     @property
@@ -238,10 +319,10 @@ class DeviceV2Rois:
     def title_rect(self):
         return self.construct_int_xywh_rect(
             x=0,
-            y=self.h_fixed_mid
-            + self.sizes.TITLE_BOTTOM_FROM_VER_MID
+            y=self.h_without_top_bar_mid
+            + self.sizes.TITLE_BOTTOM_FROM_VMID
             - self.sizes.TITLE_FONT_PX,
-            w=self.hor_mid + self.sizes.TITLE_WIDTH_RIGHT,
+            w=self.hmid + self.sizes.TITLE_WIDTH_RIGHT,
             h=self.sizes.TITLE_FONT_PX,
         )
 
@@ -250,19 +331,19 @@ class DeviceV2Rois:
         return crop_xywh(self.img, self.title_rect)
 
     @property
-    def cover_rect(self):
+    def jacket_rect(self):
         return self.construct_int_xywh_rect(
-            x=self.hor_mid
-            + self.sizes.COVER_RIGHT_FROM_HOR_MID
-            - self.sizes.COVER_WIDTH,
-            y=self.h_fixed_mid - self.sizes.SCORE_PANEL[1] / 2,
-            w=self.sizes.COVER_WIDTH,
-            h=self.sizes.COVER_WIDTH,
+            x=self.hmid
+            + self.sizes.JACKET_RIGHT_FROM_HOR_MID
+            - self.sizes.JACKET_WIDTH,
+            y=self.h_without_top_bar_mid - self.sizes.SCORE_PANEL[1] / 2,
+            w=self.sizes.JACKET_WIDTH,
+            h=self.sizes.JACKET_WIDTH,
         )
 
     @property
-    def cover(self):
-        return crop_xywh(self.img, self.cover_rect)
+    def jacket(self):
+        return crop_xywh(self.img, self.jacket_rect)
 
 
 class DeviceV2AutoRois(DeviceV2Rois):
@@ -273,7 +354,7 @@ class DeviceV2AutoRois(DeviceV2Rois):
 
     def __init__(self, img: Mat):
         factor = self.get_factor(img.shape[1], img.shape[0])
-        self.sizes = Sizes(factor)
+        self.sizes = SizesV1(factor)
         self.__img = None
         self.img = img
 
