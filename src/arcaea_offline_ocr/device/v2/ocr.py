@@ -7,7 +7,16 @@ import numpy as np
 from PIL import Image
 
 from ...crop import crop_xywh
-from ...mask import mask_byd, mask_ftr, mask_gray, mask_prs, mask_pst, mask_white
+from ...mask import (
+    mask_byd,
+    mask_ftr,
+    mask_gray,
+    mask_max_recall_purple,
+    mask_pfl_white,
+    mask_prs,
+    mask_pst,
+    mask_white,
+)
 from ...ocr import (
     FixRects,
     ocr_digit_samples_knn,
@@ -22,6 +31,7 @@ from ..shared import DeviceOcrResult
 from .preprocess import find_digits_preprocess
 from .rois import DeviceV2Rois
 from .shared import MAX_RECALL_CLOSE_KERNEL
+from .sizes import SizesV2
 
 
 class DeviceV2Ocr:
@@ -105,20 +115,33 @@ class DeviceV2Ocr:
                 roi = cv2.fillPoly(roi, [contour], [0])
         return ocr_digits_by_contour_knn(roi, self.knn_model)
 
+    def mask_pfl(self, pfl_roi: Mat, rois: DeviceV2Rois):
+        return (
+            mask_pfl_white(cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2HSV))
+            if isinstance(rois.sizes, SizesV2)
+            else mask_gray(pfl_roi)
+        )
+
     def ocr_pure(self, rois: DeviceV2Rois):
-        roi = mask_gray(rois.pure)
+        roi = self.mask_pfl(rois.pure, rois)
         return self._base_ocr_pfl(roi, rois.sizes.factor)
 
     def ocr_far(self, rois: DeviceV2Rois):
-        roi = mask_gray(rois.far)
+        roi = self.mask_pfl(rois.far, rois)
         return self._base_ocr_pfl(roi, rois.sizes.factor)
 
     def ocr_lost(self, rois: DeviceV2Rois):
-        roi = mask_gray(rois.lost)
+        roi = self.mask_pfl(rois.lost, rois)
         return self._base_ocr_pfl(roi, rois.sizes.factor)
 
     def ocr_max_recall(self, rois: DeviceV2Rois):
-        roi = mask_gray(rois.max_recall_rating_class)
+        roi = (
+            mask_max_recall_purple(
+                cv2.cvtColor(rois.max_recall_rating_class, cv2.COLOR_BGR2HSV)
+            )
+            if isinstance(rois.sizes, SizesV2)
+            else mask_gray(rois.max_recall_rating_class)
+        )
         roi_closed = cv2.morphologyEx(roi, cv2.MORPH_CLOSE, MAX_RECALL_CLOSE_KERNEL)
         contours, _ = cv2.findContours(
             roi_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE

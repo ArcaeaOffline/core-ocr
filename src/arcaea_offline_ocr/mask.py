@@ -8,6 +8,8 @@ __all__ = [
     "GRAY_MAX_HSV",
     "WHITE_MIN_HSV",
     "WHITE_MAX_HSV",
+    "PFL_WHITE_MIN_HSV",
+    "PFL_WHITE_MAX_HSV",
     "PST_MIN_HSV",
     "PST_MAX_HSV",
     "PRS_MIN_HSV",
@@ -16,13 +18,17 @@ __all__ = [
     "FTR_MAX_HSV",
     "BYD_MIN_HSV",
     "BYD_MAX_HSV",
+    "MAX_RECALL_PURPLE_MIN_HSV",
+    "MAX_RECALL_PURPLE_MAX_HSV",
     "mask_gray",
     "mask_white",
+    "mask_pfl_white",
     "mask_pst",
     "mask_prs",
     "mask_ftr",
     "mask_byd",
     "mask_rating_class",
+    "mask_max_recall_purple",
 ]
 
 GRAY_MIN_HSV = np.array([0, 0, 70], np.uint8)
@@ -33,6 +39,9 @@ GRAY_MAX_BGR = np.array([160] * 3, np.uint8)
 
 WHITE_MIN_HSV = np.array([0, 0, 240], np.uint8)
 WHITE_MAX_HSV = np.array([179, 10, 255], np.uint8)
+
+PFL_WHITE_MIN_HSV = np.array([0, 0, 248], np.uint8)
+PFL_WHITE_MAX_HSV = np.array([179, 10, 255], np.uint8)
 
 PST_MIN_HSV = np.array([100, 50, 80], np.uint8)
 PST_MAX_HSV = np.array([100, 255, 255], np.uint8)
@@ -45,6 +54,9 @@ FTR_MAX_HSV = np.array([155, 181, 150], np.uint8)
 
 BYD_MIN_HSV = np.array([170, 50, 50], np.uint8)
 BYD_MAX_HSV = np.array([179, 210, 198], np.uint8)
+
+MAX_RECALL_PURPLE_MIN_HSV = np.array([125, 0, 0], np.uint8)
+MAX_RECALL_PURPLE_MAX_HSV = np.array([130, 100, 150], np.uint8)
 
 
 def mask_gray(__img_bgr: Mat):
@@ -59,6 +71,12 @@ def mask_gray(__img_bgr: Mat):
 
 def mask_white(img_hsv: Mat):
     mask = cv2.inRange(img_hsv, WHITE_MIN_HSV, WHITE_MAX_HSV)
+    mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)))
+    return mask
+
+
+def mask_pfl_white(img_hsv: Mat):
+    mask = cv2.inRange(img_hsv, PFL_WHITE_MIN_HSV, PFL_WHITE_MAX_HSV)
     mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)))
     return mask
 
@@ -93,3 +111,9 @@ def mask_rating_class(img_hsv: Mat):
     ftr = mask_ftr(img_hsv)
     byd = mask_byd(img_hsv)
     return cv2.bitwise_or(byd, cv2.bitwise_or(ftr, cv2.bitwise_or(pst, prs)))
+
+
+def mask_max_recall_purple(img_hsv: Mat):
+    mask = cv2.inRange(img_hsv, MAX_RECALL_PURPLE_MIN_HSV, MAX_RECALL_PURPLE_MAX_HSV)
+    mask = cv2.dilate(mask, (2, 2))
+    return mask
