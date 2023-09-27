@@ -3,9 +3,11 @@ from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
+from PIL import Image
 
 from ....crop import crop_xywh
 from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
+from ....phash_db import ImagePHashDatabase
 from ....sift_db import SIFTDatabase
 from ....types import Mat, cv2_ml_KNearest
 from ....utils import construct_int_xywh_rect
@@ -19,12 +21,12 @@ class ChieriBotV4Ocr:
         self,
         score_knn: cv2_ml_KNearest,
         pfl_knn: cv2_ml_KNearest,
-        sift_db: SIFTDatabase,
+        phash_db: ImagePHashDatabase,
         factor: Optional[float] = 1.0,
     ):
         self.__score_knn = score_knn
         self.__pfl_knn = pfl_knn
-        self.__sift_db = sift_db
+        self.__phash_db = phash_db
         self.__rois = ChieriBotV4Rois(factor)
 
     @property
@@ -44,12 +46,12 @@ class ChieriBotV4Ocr:
         self.__pfl_knn = knn_digits_model
 
     @property
-    def sift_db(self):
-        return self.__sift_db
+    def phash_db(self):
+        return self.__phash_db
 
-    @sift_db.setter
-    def sift_db(self, sift_db: SIFTDatabase):
-        self.__sift_db = sift_db
+    @phash_db.setter
+    def phash_db(self, phash_db: ImagePHashDatabase):
+        self.__phash_db = phash_db
 
     @property
     def rois(self):
@@ -98,7 +100,7 @@ class ChieriBotV4Ocr:
         jacket_roi = cv2.cvtColor(
             crop_xywh(component_bgr, jacket_rect), cv2.COLOR_BGR2GRAY
         )
-        return self.sift_db.lookup_img(jacket_roi)[0]
+        return self.phash_db.lookup_image(Image.fromarray(jacket_roi))[0]
 
     # def ocr_component_score_paddle(self, component_bgr: Mat) -> int:
     #     # sourcery skip: inline-immediately-returned-variable

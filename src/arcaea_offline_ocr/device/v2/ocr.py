@@ -4,6 +4,7 @@ from typing import Sequence
 
 import cv2
 import numpy as np
+from PIL import Image
 
 from ...crop import crop_xywh
 from ...mask import mask_byd, mask_ftr, mask_gray, mask_prs, mask_pst, mask_white
@@ -14,6 +15,7 @@ from ...ocr import (
     preprocess_hog,
     resize_fill_square,
 )
+from ...phash_db import ImagePHashDatabase
 from ...sift_db import SIFTDatabase
 from ...types import Mat, cv2_ml_KNearest
 from ..shared import DeviceOcrResult
@@ -23,9 +25,9 @@ from .shared import MAX_RECALL_CLOSE_KERNEL
 
 
 class DeviceV2Ocr:
-    def __init__(self, knn_model: cv2_ml_KNearest, sift_db: SIFTDatabase):
+    def __init__(self, knn_model: cv2_ml_KNearest, phash_db: ImagePHashDatabase):
         self.__knn_model = knn_model
-        self.__sift_db = sift_db
+        self.__phash_db = phash_db
 
     @property
     def knn_model(self):
@@ -38,14 +40,14 @@ class DeviceV2Ocr:
         self.__knn_model = value
 
     @property
-    def sift_db(self):
-        if not self.__sift_db:
-            raise ValueError("`sift_db` unset.")
-        return self.__sift_db
+    def phash_db(self):
+        if not self.__phash_db:
+            raise ValueError("`phash_db` unset.")
+        return self.__phash_db
 
-    @sift_db.setter
-    def sift_db(self, value: SIFTDatabase):
-        self.__sift_db = value
+    @phash_db.setter
+    def phash_db(self, value: SIFTDatabase):
+        self.__phash_db = value
 
     @lru_cache
     def _get_digit_widths(self, num_list: Sequence[int], factor: float):
@@ -86,7 +88,7 @@ class DeviceV2Ocr:
 
     def ocr_song_id(self, rois: DeviceV2Rois):
         jacket = cv2.cvtColor(rois.jacket, cv2.COLOR_BGR2GRAY)
-        return self.sift_db.lookup_img(jacket)[0]
+        return self.phash_db.lookup_image(Image.fromarray(jacket))[0]
 
     def ocr_rating_class(self, rois: DeviceV2Rois):
         roi = cv2.cvtColor(rois.max_recall_rating_class, cv2.COLOR_BGR2HSV)
