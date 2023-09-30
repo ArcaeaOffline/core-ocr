@@ -1,2 +1,2 @@
-from .common import Extractor
+from .common import DeviceRoiExtractor
 from .sizes import *

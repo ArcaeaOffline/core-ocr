@@ -1,2 +1,2 @@
-from .auto import AutoMasker, AutoMaskerT1, AutoMaskerT2
-from .common import Masker
+from .auto import *
+from .common import DeviceRoiMasker

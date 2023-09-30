@@ -1,7 +1,7 @@
-from .common import AutoSizes
+from .common import DeviceAutoRoiSizes
 
 
-class AutoSizesT1(AutoSizes):
+class DeviceAutoRoiSizesT1(DeviceAutoRoiSizes):
     @property
     def factor(self):
         return (

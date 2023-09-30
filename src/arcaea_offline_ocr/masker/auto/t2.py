@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from .common import AutoMasker
+from .common import DeviceAutoRoiMasker
 
 PFL_HSV_MIN = np.array([0, 0, 248], np.uint8)
 PFL_HSV_MAX = np.array([179, 10, 255], np.uint8)
@@ -38,7 +38,7 @@ PURE_MEMORY_HSV_MIN = np.array([90, 70, 80], np.uint8)
 PURE_MEMORY_HSV_MAX = np.array([110, 200, 175], np.uint8)
 
 
-class AutoMaskerT2(AutoMasker):
+class DeviceAutoRoiMaskerT2(DeviceAutoRoiMasker):
     @classmethod
     def pfl(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
         return cv2.inRange(

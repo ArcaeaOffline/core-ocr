@@ -1,7 +1,7 @@
 import cv2
 
 
-class Masker:
+class DeviceRoiMasker:
     @classmethod
     def pure(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
         raise NotImplementedError()

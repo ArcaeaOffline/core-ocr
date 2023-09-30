@@ -1,3 +1,3 @@
-from .common import AutoSizes
-from .t1 import AutoSizesT1
-from .t2 import AutoSizesT2
+from .common import DeviceAutoRoiSizes
+from .t1 import DeviceAutoRoiSizesT1
+from .t2 import DeviceAutoRoiSizesT2

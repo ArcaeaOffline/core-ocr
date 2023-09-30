@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from .common import AutoMasker
+from .common import DeviceAutoRoiMasker
 
 GRAY_BGR_MIN = np.array([50] * 3, np.uint8)
 GRAY_BGR_MAX = np.array([160] * 3, np.uint8)
@@ -34,7 +34,7 @@ PURE_MEMORY_HSV_MIN = np.array([90, 70, 80], np.uint8)
 PURE_MEMORY_HSV_MAX = np.array([110, 200, 175], np.uint8)
 
 
-class AutoMaskerT1(AutoMasker):
+class DeviceAutoRoiMaskerT1(DeviceAutoRoiMasker):
     @classmethod
     def gray(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
         bgr_value_equal_mask = np.max(roi_bgr, axis=2) - np.min(roi_bgr, axis=2) <= 5

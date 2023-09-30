@@ -1,5 +1,5 @@
-from ..common import Masker
+from ..common import DeviceRoiMasker
 
 
-class AutoMasker(Masker):
+class DeviceAutoRoiMasker(DeviceRoiMasker):
     ...

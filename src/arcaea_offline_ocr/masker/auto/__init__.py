@@ -1,3 +1,3 @@
-from .common import AutoMasker
-from .t1 import AutoMaskerT1
-from .t2 import AutoMaskerT2
+from .common import DeviceAutoRoiMasker
+from .t1 import DeviceAutoRoiMaskerT1
+from .t2 import DeviceAutoRoiMaskerT2
