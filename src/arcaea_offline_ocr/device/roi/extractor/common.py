@@ -1,7 +1,7 @@
 import cv2
 
-from ..crop import crop_xywh
-from .sizes.common import DeviceRoiSizes
+from ....crop import crop_xywh
+from ..definitions.common import DeviceRoiSizes
 
 
 class DeviceRoiExtractor:

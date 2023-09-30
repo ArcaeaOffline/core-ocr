@@ -2,24 +2,24 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .crop import crop_xywh
-from .extractor import Extractor
-from .masker import Masker
-from .ocr import (
+from ..crop import crop_xywh
+from ..ocr import (
     FixRects,
     ocr_digit_samples_knn,
     ocr_digits_by_contour_knn,
     preprocess_hog,
     resize_fill_square,
 )
-from .phash_db import ImagePHashDatabase
+from ..phash_db import ImagePHashDatabase
+from .roi.extractor import DeviceRoiExtractor
+from .roi.masker import DeviceRoiMasker
 
 
 class DeviceOcr:
     def __init__(
         self,
-        extractor: Extractor,
-        masker: Masker,
+        extractor: DeviceRoiExtractor,
+        masker: DeviceRoiMasker,
         knn_model: cv2.ml.KNearest,
         phash_db: ImagePHashDatabase,
     ):
