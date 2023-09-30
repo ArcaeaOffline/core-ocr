@@ -8,7 +8,6 @@ from PIL import Image
 from ....crop import crop_xywh
 from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
 from ....phash_db import ImagePHashDatabase
-from ....sift_db import SIFTDatabase
 from ....types import Mat, cv2_ml_KNearest
 from ....utils import construct_int_xywh_rect
 from ...shared import B30OcrResultItem

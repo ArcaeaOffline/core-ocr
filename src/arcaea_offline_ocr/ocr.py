@@ -7,7 +7,6 @@ import numpy as np
 from numpy.linalg import norm
 
 from .crop import crop_xywh
-from .mask import mask_byd, mask_ftr, mask_prs, mask_pst
 from .types import Mat, cv2_ml_KNearest
 
 __all__ = [
@@ -199,13 +198,3 @@ def ocr_digits_by_contour_knn(
 ) -> int:
     samples = ocr_digits_by_contour_get_samples(__roi_gray, size)
     return ocr_digit_samples_knn(samples, knn_model, k)
-
-
-def ocr_rating_class(roi_hsv: Mat):
-    mask_results = [
-        mask_pst(roi_hsv),
-        mask_prs(roi_hsv),
-        mask_ftr(roi_hsv),
-        mask_byd(roi_hsv),
-    ]
-    return max(enumerate(mask_results), key=lambda e: np.count_nonzero(e[1]))[0]
