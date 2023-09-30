@@ -29,6 +29,10 @@ class Extractor:
         return crop_xywh(self.img, self.__construct_int_rect(self.sizes.score))
 
     @property
+    def jacket(self):
+        return crop_xywh(self.img, self.__construct_int_rect(self.sizes.jacket))
+
+    @property
     def rating_class(self):
         return crop_xywh(self.img, self.__construct_int_rect(self.sizes.rating_class))
 
