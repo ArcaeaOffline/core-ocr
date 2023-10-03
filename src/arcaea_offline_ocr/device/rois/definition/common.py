@@ -3,7 +3,7 @@ from typing import Tuple
 Rect = Tuple[int, int, int, int]
 
 
-class DeviceRoiSizes:
+class DeviceRois:
     pure: Rect
     far: Rect
     lost: Rect
