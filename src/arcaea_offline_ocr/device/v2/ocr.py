@@ -146,9 +146,9 @@ class DeviceV2Ocr:
         contours, _ = cv2.findContours(
             roi_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
         )
-        rects = sorted(
-            [cv2.boundingRect(c) for c in contours], key=lambda r: r[0], reverse=True
-        )
+        rects = [cv2.boundingRect(c) for c in contours]
+        rects = [r for r in rects if r[2] > 5 and r[3] > 5]
+        rects = sorted(rects, key=lambda r: r[0], reverse=True)
         max_recall_roi = crop_xywh(roi, rects[0])
         return ocr_digits_by_contour_knn(max_recall_roi, self.knn_model)
 

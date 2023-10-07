@@ -56,7 +56,7 @@ BYD_MIN_HSV = np.array([170, 50, 50], np.uint8)
 BYD_MAX_HSV = np.array([179, 210, 198], np.uint8)
 
 MAX_RECALL_PURPLE_MIN_HSV = np.array([125, 0, 0], np.uint8)
-MAX_RECALL_PURPLE_MAX_HSV = np.array([130, 100, 150], np.uint8)
+MAX_RECALL_PURPLE_MAX_HSV = np.array([145, 100, 150], np.uint8)
 
 
 def mask_gray(__img_bgr: Mat):
