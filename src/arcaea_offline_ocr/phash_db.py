@@ -21,7 +21,6 @@ def phash_opencv(img_gray, hash_size=8, highfreq_factor=4):
     img_size = hash_size * highfreq_factor
     image = cv2.resize(img_gray, (img_size, img_size), interpolation=cv2.INTER_LANCZOS4)
     image = np.float32(image)
-    dct = cv2.dct(image, flags=cv2.DCT_ROWS)
     dct = cv2.dct(image)
     dctlowfreq = dct[:hash_size, :hash_size]
     med = np.median(dctlowfreq)
