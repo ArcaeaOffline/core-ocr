@@ -35,7 +35,7 @@ def hamming_distance_sql_function(user_input, db_entry) -> int:
     )
 
 
-class ImagePHashDatabase:
+class ImagePhashDatabase:
     def __init__(self, db_path: str):
         with sqlite3.connect(db_path) as conn:
             self.hash_size = int(

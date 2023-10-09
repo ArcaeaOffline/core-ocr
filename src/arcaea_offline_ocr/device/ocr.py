@@ -10,18 +10,19 @@ from ..ocr import (
     preprocess_hog,
     resize_fill_square,
 )
-from ..phash_db import ImagePHashDatabase
-from .roi.extractor import DeviceRoiExtractor
-from .roi.masker import DeviceRoiMasker
+from ..phash_db import ImagePhashDatabase
+from .common import DeviceOcrResult
+from .rois.extractor import DeviceRoisExtractor
+from .rois.masker import DeviceRoisMasker
 
 
 class DeviceOcr:
     def __init__(
         self,
-        extractor: DeviceRoiExtractor,
-        masker: DeviceRoiMasker,
+        extractor: DeviceRoisExtractor,
+        masker: DeviceRoisMasker,
         knn_model: cv2.ml.KNearest,
-        phash_db: ImagePHashDatabase,
+        phash_db: ImagePhashDatabase,
     ):
         self.extractor = extractor
         self.masker = masker

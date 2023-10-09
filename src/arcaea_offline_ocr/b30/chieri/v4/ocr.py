@@ -7,7 +7,7 @@ from PIL import Image
 
 from ....crop import crop_xywh
 from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
-from ....phash_db import ImagePHashDatabase
+from ....phash_db import ImagePhashDatabase
 from ....types import Mat, cv2_ml_KNearest
 from ....utils import construct_int_xywh_rect
 from ...shared import B30OcrResultItem
@@ -20,7 +20,7 @@ class ChieriBotV4Ocr:
         self,
         score_knn: cv2_ml_KNearest,
         pfl_knn: cv2_ml_KNearest,
-        phash_db: ImagePHashDatabase,
+        phash_db: ImagePhashDatabase,
         factor: Optional[float] = 1.0,
     ):
         self.__score_knn = score_knn
@@ -49,7 +49,7 @@ class ChieriBotV4Ocr:
         return self.__phash_db
 
     @phash_db.setter
-    def phash_db(self, phash_db: ImagePHashDatabase):
+    def phash_db(self, phash_db: ImagePhashDatabase):
         self.__phash_db = phash_db
 
     @property
