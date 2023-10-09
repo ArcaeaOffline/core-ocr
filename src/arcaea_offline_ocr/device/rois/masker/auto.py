@@ -149,7 +149,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     BYD_HSV_MAX = np.array([179, 210, 198], np.uint8)
 
     MAX_RECALL_HSV_MIN = np.array([125, 0, 0], np.uint8)
-    MAX_RECALL_HSV_MAX = np.array([130, 100, 150], np.uint8)
+    MAX_RECALL_HSV_MAX = np.array([145, 100, 150], np.uint8)
 
     TRACK_LOST_HSV_MIN = np.array([170, 75, 90], np.uint8)
     TRACK_LOST_HSV_MAX = np.array([175, 170, 160], np.uint8)
