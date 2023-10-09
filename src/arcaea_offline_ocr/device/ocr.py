@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from PIL import Image
 
 from ..crop import crop_xywh
 from ..ocr import (
@@ -98,5 +97,64 @@ class DeviceOcr:
         ]
         return max(enumerate(results), key=lambda i: np.count_nonzero(i[1]))[0]
 
+    def lookup_song_id(self):
+        return self.phash_db.lookup_jacket(
+            cv2.cvtColor(self.extractor.jacket, cv2.COLOR_BGR2GRAY)
+        )
+
     def song_id(self):
-        return self.phash_db.lookup_image(Image.fromarray(self.extractor.jacket))[0]
+        return self.lookup_song_id()[0]
+
+    @staticmethod
+    def preprocess_char_icon(img_gray: cv2.Mat):
+        h, w = img_gray.shape[:2]
+        img = cv2.copyMakeBorder(img_gray, w - h, 0, 0, 0, cv2.BORDER_REPLICATE)
+        h, w = img.shape[:2]
+        img = cv2.fillPoly(
+            img,
+            [
+                np.array([[0, 0], [round(w / 2), 0], [0, round(h / 2)]], np.int32),
+                np.array([[w, 0], [round(w / 2), 0], [w, round(h / 2)]], np.int32),
+                np.array([[0, h], [round(w / 2), h], [0, round(h / 2)]], np.int32),
+                np.array([[w, h], [round(w / 2), h], [w, round(h / 2)]], np.int32),
+            ],
+            (128),
+        )
+        return img
+
+    def lookup_partner_id(self):
+        return self.phash_db.lookup_partner_icon(
+            self.preprocess_char_icon(
+                cv2.cvtColor(self.extractor.partner_icon, cv2.COLOR_BGR2GRAY)
+            )
+        )
+
+    def partner_id(self):
+        return self.lookup_partner_id()[0]
+
+    def ocr(self) -> DeviceOcrResult:
+        rating_class = self.rating_class()
+        pure = self.pure()
+        far = self.far()
+        lost = self.lost()
+        score = self.score()
+        max_recall = self.max_recall()
+        clear_status = self.clear_status()
+
+        hash_len = self.phash_db.hash_size**2
+        song_id, song_id_distance = self.lookup_song_id()
+        partner_id, partner_id_distance = self.lookup_partner_id()
+
+        return DeviceOcrResult(
+            rating_class=rating_class,
+            pure=pure,
+            far=far,
+            lost=lost,
+            score=score,
+            max_recall=max_recall,
+            song_id=song_id,
+            song_id_possibility=1 - song_id_distance / hash_len,
+            clear_status=clear_status,
+            partner_id=partner_id,
+            partner_id_possibility=1 - partner_id_distance / hash_len,
+        )

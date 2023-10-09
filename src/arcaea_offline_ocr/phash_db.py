@@ -64,14 +64,14 @@ class ImagePhashDatabase:
 
             self.jacket_ids: List[str] = []
             self.jacket_hashes = []
-            self.partner_ids: List[str] = []
-            self.partner_hashes = []
+            self.partner_icon_ids: List[str] = []
+            self.partner_icon_hashes = []
 
             for id, hash in zip(self.ids, self.hashes):
                 id_splitted = id.split("||")
-                if len(id_splitted) > 1 and id_splitted[0] == "partner":
-                    self.partner_ids.append(id)
-                    self.partner_hashes.append(hash)
+                if len(id_splitted) > 1 and id_splitted[0] == "partner_icon":
+                    self.partner_icon_ids.append(id_splitted[1])
+                    self.partner_icon_hashes.append(hash)
                 else:
                     self.jacket_ids.append(id)
                     self.jacket_hashes.append(hash)
@@ -104,13 +104,13 @@ class ImagePhashDatabase:
     def lookup_jacket(self, img_gray: cv2.Mat):
         return self.lookup_jackets(img_gray)[0]
 
-    def lookup_partners(self, img_gray: cv2.Mat, *, limit: int = 5):
+    def lookup_partner_icons(self, img_gray: cv2.Mat, *, limit: int = 5):
         image_hash = self.calculate_phash(img_gray).flatten()
         xor_results = [
             (id, np.count_nonzero(image_hash ^ h))
-            for id, h in zip(self.partner_ids, self.partner_hashes)
+            for id, h in zip(self.partner_icon_ids, self.partner_icon_hashes)
         ]
         return sorted(xor_results, key=lambda r: r[1])[:limit]
 
-    def lookup_partner(self, img_gray: cv2.Mat):
-        return self.lookup_partners(img_gray)[0]
+    def lookup_partner_icon(self, img_gray: cv2.Mat):
+        return self.lookup_partner_icons(img_gray)[0]

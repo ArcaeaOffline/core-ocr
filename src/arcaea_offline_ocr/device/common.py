@@ -10,7 +10,9 @@ class DeviceOcrResult:
     far: int
     lost: int
     score: int
-    max_recall: int
+    max_recall: Optional[int] = None
     song_id: Optional[str] = None
-    title: Optional[str] = None
-    clear_type: Optional[str] = None
+    song_id_possibility: Optional[float] = None
+    clear_status: Optional[str] = None
+    partner_id: Optional[str] = None
+    partner_id_possibility: Optional[float] = None
