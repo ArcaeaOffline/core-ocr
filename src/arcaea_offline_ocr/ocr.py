@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 
 from .crop import crop_xywh
-from .types import Mat, cv2_ml_KNearest
 
 __all__ = [
     "FixRects",
@@ -68,7 +67,7 @@ class FixRects:
 
     @staticmethod
     def split_connected(
-        img_masked: Mat,
+        img_masked: cv2.Mat,
         rects: Sequence[Tuple[int, int, int, int]],
         rect_wh_ratio: float = 1.05,
         width_range_ratio: float = 0.1,
@@ -118,7 +117,7 @@ class FixRects:
         return return_rects
 
 
-def resize_fill_square(img: Mat, target: int = 20):
+def resize_fill_square(img: cv2.Mat, target: int = 20):
     h, w = img.shape[:2]
     if h > w:
         new_h = target
@@ -150,14 +149,14 @@ def preprocess_hog(digit_rois):
     return np.float32(samples)
 
 
-def ocr_digit_samples_knn(__samples, knn_model: cv2_ml_KNearest, k: int = 4):
+def ocr_digit_samples_knn(__samples, knn_model: cv2.ml.KNearest, k: int = 4):
     _, results, _, _ = knn_model.findNearest(__samples, k)
     result_list = [int(r) for r in results.ravel()]
     result_str = "".join(str(r) for r in result_list if r > -1)
     return int(result_str) if result_str else 0
 
 
-def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
+def ocr_digits_by_contour_get_samples(__roi_gray: cv2.Mat, size: int):
     roi = __roi_gray.copy()
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     rects = [cv2.boundingRect(c) for c in contours]
@@ -170,8 +169,8 @@ def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
 
 
 def ocr_digits_by_contour_knn(
-    __roi_gray: Mat,
-    knn_model: cv2_ml_KNearest,
+    __roi_gray: cv2.Mat,
+    knn_model: cv2.ml.KNearest,
     *,
     k=4,
     size: int = 20,

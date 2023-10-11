@@ -1,26 +1,25 @@
 from math import floor
 from typing import Tuple
 
+import cv2
 import numpy as np
-
-from .types import Mat
 
 __all__ = ["crop_xywh", "crop_black_edges", "crop_black_edges_grayscale"]
 
 
-def crop_xywh(mat: Mat, rect: Tuple[int, int, int, int]):
+def crop_xywh(mat: cv2.Mat, rect: Tuple[int, int, int, int]):
     x, y, w, h = rect
     return mat[y : y + h, x : x + w]
 
 
-def is_black_edge(list_of_pixels: Mat, black_pixel: Mat, ratio: float = 0.6):
+def is_black_edge(list_of_pixels: cv2.Mat, black_pixel: cv2.Mat, ratio: float = 0.6):
     pixels = list_of_pixels.reshape([-1, 3])
     return np.count_nonzero(np.all(pixels < black_pixel, axis=1)) > floor(
         len(pixels) * ratio
     )
 
 
-def crop_black_edges(img_bgr: Mat, black_threshold: int = 50):
+def crop_black_edges(img_bgr: cv2.Mat, black_threshold: int = 50):
     cropped = img_bgr.copy()
     black_pixel = np.array([black_threshold] * 3, img_bgr.dtype)
     height, width = img_bgr.shape[:2]
@@ -66,7 +65,7 @@ def is_black_edge_grayscale(
 
 
 def crop_black_edges_grayscale(
-    img_gray: Mat, black_threshold: int = 50
+    img_gray: cv2.Mat, black_threshold: int = 50
 ) -> Tuple[int, int, int, int]:
     """Returns cropped rect"""
     height, width = img_gray.shape[:2]

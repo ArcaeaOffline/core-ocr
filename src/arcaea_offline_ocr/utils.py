@@ -1,17 +1,17 @@
 import io
 from collections.abc import Iterable
-from typing import Callable, Tuple, TypeVar, Union, overload
+from typing import Callable, TypeVar, Union, overload
 
 import cv2
 import numpy as np
 from PIL import Image, ImageCms
 
-from .types import Mat, XYWHRect
+from .types import XYWHRect
 
 __all__ = ["imread_unicode"]
 
 
-def imread_unicode(filepath: str, flags: int = cv2.IMREAD_UNCHANGED) -> Mat:
+def imread_unicode(filepath: str, flags: int = cv2.IMREAD_UNCHANGED):
     # https://stackoverflow.com/a/57872297/16484891
     # CC BY-SA 4.0
     return cv2.imdecode(np.fromfile(filepath, dtype=np.uint8), flags)

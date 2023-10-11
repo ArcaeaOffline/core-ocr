@@ -8,7 +8,6 @@ from PIL import Image
 from ....crop import crop_xywh
 from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
 from ....phash_db import ImagePhashDatabase
-from ....types import Mat, cv2_ml_KNearest
 from ....utils import construct_int_xywh_rect
 from ...shared import B30OcrResultItem
 from .colors import *
@@ -18,8 +17,8 @@ from .rois import ChieriBotV4Rois
 class ChieriBotV4Ocr:
     def __init__(
         self,
-        score_knn: cv2_ml_KNearest,
-        pfl_knn: cv2_ml_KNearest,
+        score_knn: cv2.ml.KNearest,
+        pfl_knn: cv2.ml.KNearest,
         phash_db: ImagePhashDatabase,
         factor: Optional[float] = 1.0,
     ):
@@ -33,7 +32,7 @@ class ChieriBotV4Ocr:
         return self.__score_knn
 
     @score_knn.setter
-    def score_knn(self, knn_digits_model: Mat):
+    def score_knn(self, knn_digits_model: cv2.ml.KNearest):
         self.__score_knn = knn_digits_model
 
     @property
@@ -41,7 +40,7 @@ class ChieriBotV4Ocr:
         return self.__pfl_knn
 
     @pfl_knn.setter
-    def pfl_knn(self, knn_digits_model: Mat):
+    def pfl_knn(self, knn_digits_model: cv2.ml.KNearest):
         self.__pfl_knn = knn_digits_model
 
     @property
@@ -64,10 +63,10 @@ class ChieriBotV4Ocr:
     def factor(self, factor: float):
         self.__rois.factor = factor
 
-    def set_factor(self, img: Mat):
+    def set_factor(self, img: cv2.Mat):
         self.factor = img.shape[0] / 4400
 
-    def ocr_component_rating_class(self, component_bgr: Mat) -> int:
+    def ocr_component_rating_class(self, component_bgr: cv2.Mat) -> int:
         rating_class_rect = construct_int_xywh_rect(
             self.rois.component_rois.rating_class_rect
         )
@@ -84,15 +83,7 @@ class ChieriBotV4Ocr:
         else:
             return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
 
-    # def ocr_component_title(self, component_bgr: Mat) -> str:
-    #     # sourcery skip: inline-immediately-returned-variable
-    #     title_rect = construct_int_xywh_rect(self.rois.component_rois.title_rect)
-    #     title_roi = crop_xywh(component_bgr, title_rect)
-    #     ocr_result = self.sift_db.ocr(title_roi, cls=False)
-    #     title = ocr_result[0][-1][1][0] if ocr_result and ocr_result[0] else ""
-    #     return title
-
-    def ocr_component_song_id(self, component_bgr: Mat):
+    def ocr_component_song_id(self, component_bgr: cv2.Mat):
         jacket_rect = construct_int_xywh_rect(
             self.rois.component_rois.jacket_rect, floor
         )
@@ -101,20 +92,7 @@ class ChieriBotV4Ocr:
         )
         return self.phash_db.lookup_image(Image.fromarray(jacket_roi))[0]
 
-    # def ocr_component_score_paddle(self, component_bgr: Mat) -> int:
-    #     # sourcery skip: inline-immediately-returned-variable
-    #     score_rect = construct_int_xywh_rect(self.rois.component_rois.score_rect)
-    #     score_roi = cv2.cvtColor(
-    #         crop_xywh(component_bgr, score_rect), cv2.COLOR_BGR2GRAY
-    #     )
-    #     _, score_roi = cv2.threshold(
-    #         score_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    #     )
-    #     score_str = self.sift_db.ocr(score_roi, cls=False)[0][-1][1][0]
-    #     score = int(score_str.replace("'", "").replace(" ", ""))
-    #     return score
-
-    def ocr_component_score_knn(self, component_bgr: Mat) -> int:
+    def ocr_component_score_knn(self, component_bgr: cv2.Mat) -> int:
         # sourcery skip: inline-immediately-returned-variable
         score_rect = construct_int_xywh_rect(self.rois.component_rois.score_rect)
         score_roi = cv2.cvtColor(
@@ -136,7 +114,7 @@ class ChieriBotV4Ocr:
             score_roi = cv2.fillPoly(score_roi, [contour], 0)
         return ocr_digits_by_contour_knn(score_roi, self.score_knn)
 
-    def find_pfl_rects(self, component_pfl_processed: Mat) -> List[List[int]]:
+    def find_pfl_rects(self, component_pfl_processed: cv2.Mat) -> List[List[int]]:
         # sourcery skip: inline-immediately-returned-variable
         pfl_roi_find = cv2.morphologyEx(
             component_pfl_processed,
@@ -162,7 +140,7 @@ class ChieriBotV4Ocr:
         ]
         return pfl_rects_adjusted
 
-    def preprocess_component_pfl(self, component_bgr: Mat) -> Mat:
+    def preprocess_component_pfl(self, component_bgr: cv2.Mat) -> cv2.Mat:
         pfl_rect = construct_int_xywh_rect(self.rois.component_rois.pfl_rect)
         pfl_roi = crop_xywh(component_bgr, pfl_rect)
         pfl_roi_hsv = cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2HSV)
@@ -202,7 +180,7 @@ class ChieriBotV4Ocr:
         return result_eroded if len(self.find_pfl_rects(result_eroded)) == 3 else result
 
     def ocr_component_pfl(
-        self, component_bgr: Mat
+        self, component_bgr: cv2.Mat
     ) -> Tuple[Optional[int], Optional[int], Optional[int]]:
         try:
             pfl_roi = self.preprocess_component_pfl(component_bgr)
@@ -233,16 +211,7 @@ class ChieriBotV4Ocr:
         except Exception:
             return (None, None, None)
 
-    # def ocr_component_date(self, component_bgr: Mat):
-    #     date_rect = construct_int_xywh_rect(self.rois.component_rois.date_rect)
-    #     date_roi = cv2.cvtColor(crop_xywh(component_bgr, date_rect), cv2.COLOR_BGR2GRAY)
-    #     _, date_roi = cv2.threshold(
-    #         date_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    #     )
-    #     date_str = self.sift_db.ocr(date_roi, cls=False)[0][-1][1][0]
-    #     return date_str
-
-    def ocr_component(self, component_bgr: Mat) -> B30OcrResultItem:
+    def ocr_component(self, component_bgr: cv2.Mat) -> B30OcrResultItem:
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)
         rating_class = self.ocr_component_rating_class(component_blur)
         song_id = self.ocr_component_song_id(component_bgr)
@@ -261,7 +230,7 @@ class ChieriBotV4Ocr:
             date=None,
         )
 
-    def ocr(self, img_bgr: Mat) -> List[B30OcrResultItem]:
+    def ocr(self, img_bgr: cv2.Mat) -> List[B30OcrResultItem]:
         self.set_factor(img_bgr)
         return [
             self.ocr_component(component_bgr)
