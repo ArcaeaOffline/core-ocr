@@ -13,6 +13,6 @@ class DeviceOcrResult:
     max_recall: Optional[int] = None
     song_id: Optional[str] = None
     song_id_possibility: Optional[float] = None
-    clear_status: Optional[str] = None
+    clear_status: Optional[int] = None
     partner_id: Optional[str] = None
     partner_id_possibility: Optional[float] = None

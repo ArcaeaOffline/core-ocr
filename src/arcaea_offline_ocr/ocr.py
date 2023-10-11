@@ -1,5 +1,4 @@
 import math
-from copy import deepcopy
 from typing import Optional, Sequence, Tuple
 
 import cv2
@@ -64,8 +63,7 @@ class FixRects:
                 new_h = new_bottom - new_y
                 new_rects.append((new_x, new_y, new_w, new_h))
 
-        return_rects = deepcopy(rects)
-        return_rects = [r for r in return_rects if r not in consumed_rects]
+        return_rects = [r for r in rects if r not in consumed_rects]
         return_rects.extend(new_rects)
         return return_rects
 
@@ -80,42 +78,42 @@ class FixRects:
         new_rects = []
         for rect in rects:
             rx, ry, rw, rh = rect
-            if rw / rh > rect_wh_ratio:
-                # consider this is a connected contour
-                connected_rects.append(rect)
+            if rw / rh <= rect_wh_ratio:
+                continue
 
-                # find the thinnest part
-                border_ignore = round(rw * width_range_ratio)
-                img_cropped = crop_xywh(
-                    img_masked,
-                    (border_ignore, ry, rw - border_ignore, rh),
-                )
-                white_pixels = {}  # dict[x, white_pixel_number]
-                for i in range(img_cropped.shape[1]):
-                    col = img_cropped[:, i]
-                    white_pixels[rx + border_ignore + i] = np.count_nonzero(col > 200)
-                least_white_pixels = min(v for v in white_pixels.values() if v > 0)
-                x_values = [
-                    x
-                    for x, pixel in white_pixels.items()
-                    if pixel == least_white_pixels
-                ]
-                # select only middle values
-                x_mean = np.mean(x_values)
-                x_std = np.std(x_values)
-                x_values = [
-                    x
-                    for x in x_values
-                    if x_mean - x_std * 1.5 <= x <= x_mean + x_std * 1.5
-                ]
-                x_mid = round(np.median(x_values))
+            connected_rects.append(rect)
 
-                # split the rect
-                new_rects.extend(
-                    [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)]
-                )
+            # find the thinnest part
+            border_ignore = round(rw * width_range_ratio)
+            img_cropped = crop_xywh(
+                img_masked,
+                (border_ignore, ry, rw - border_ignore, rh),
+            )
+            white_pixels = {}  # dict[x, white_pixel_number]
+            for i in range(img_cropped.shape[1]):
+                col = img_cropped[:, i]
+                white_pixels[rx + border_ignore + i] = np.count_nonzero(col > 200)
 
-        return_rects = deepcopy(rects)
+            if all(v == 0 for v in white_pixels.values()):
+                return rects
+
+            least_white_pixels = min(v for v in white_pixels.values() if v > 0)
+            x_values = [
+                x for x, pixel in white_pixels.items() if pixel == least_white_pixels
+            ]
+            # select only middle values
+            x_mean = np.mean(x_values)
+            x_std = np.std(x_values)
+            x_values = [
+                x for x in x_values if x_mean - x_std * 1.5 <= x <= x_mean + x_std * 1.5
+            ]
+            x_mid = round(np.median(x_values))
+
+            # split the rect
+            new_rects.extend(
+                [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)]
+            )
+
         return_rects = [r for r in rects if r not in connected_rects]
         return_rects.extend(new_rects)
         return return_rects

@@ -47,8 +47,7 @@ class DeviceOcr:
                 continue
             roi_ocr = cv2.fillPoly(roi_ocr, [contour], [0])
         digit_rois = [
-            resize_fill_square(crop_xywh(roi_ocr, r), 20)
-            for r in sorted(filtered_rects, key=lambda r: r[0])
+            resize_fill_square(crop_xywh(roi_ocr, r), 20) for r in filtered_rects
         ]
 
         samples = preprocess_hog(digit_rois)
