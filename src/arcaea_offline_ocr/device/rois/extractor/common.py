@@ -5,9 +5,9 @@ from ..definition.common import DeviceRois
 
 
 class DeviceRoisExtractor:
-    def __init__(self, img: cv2.Mat, sizes: DeviceRois):
+    def __init__(self, img: cv2.Mat, rois: DeviceRois):
         self.img = img
-        self.sizes = sizes
+        self.sizes = rois
 
     def __construct_int_rect(self, rect):
         return tuple(round(r) for r in rect)
