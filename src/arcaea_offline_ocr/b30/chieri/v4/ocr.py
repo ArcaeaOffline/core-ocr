@@ -3,10 +3,14 @@ from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
-from PIL import Image
 
 from ....crop import crop_xywh
-from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
+from ....ocr import (
+    FixRects,
+    ocr_digits_by_contour_knn,
+    preprocess_hog,
+    resize_fill_square,
+)
 from ....phash_db import ImagePhashDatabase
 from ....utils import construct_int_xywh_rect
 from ...shared import B30OcrResultItem
@@ -90,7 +94,7 @@ class ChieriBotV4Ocr:
         jacket_roi = cv2.cvtColor(
             crop_xywh(component_bgr, jacket_rect), cv2.COLOR_BGR2GRAY
         )
-        return self.phash_db.lookup_image(Image.fromarray(jacket_roi))[0]
+        return self.phash_db.lookup_jacket(jacket_roi)[0]
 
     def ocr_component_score_knn(self, component_bgr: cv2.Mat) -> int:
         # sourcery skip: inline-immediately-returned-variable
@@ -200,7 +204,7 @@ class ChieriBotV4Ocr:
                 digits = []
                 for digit_rect in digit_rects:
                     digit = crop_xywh(roi, digit_rect)
-                    digit = cv2.resize(digit, (20, 20))
+                    digit = resize_fill_square(digit, 20)
                     digits.append(digit)
                 samples = preprocess_hog(digits)
 
