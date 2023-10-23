@@ -10,6 +10,7 @@ from ..ocr import (
     resize_fill_square,
 )
 from ..phash_db import ImagePhashDatabase
+from ..types import Mat
 from .common import DeviceOcrResult
 from .rois.extractor import DeviceRoisExtractor
 from .rois.masker import DeviceRoisMasker
@@ -28,7 +29,7 @@ class DeviceOcr:
         self.knn_model = knn_model
         self.phash_db = phash_db
 
-    def pfl(self, roi_gray: cv2.Mat, factor: float = 1.25):
+    def pfl(self, roi_gray: Mat, factor: float = 1.25):
         contours, _ = cv2.findContours(
             roi_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
         )
@@ -105,7 +106,7 @@ class DeviceOcr:
         return self.lookup_song_id()[0]
 
     @staticmethod
-    def preprocess_char_icon(img_gray: cv2.Mat):
+    def preprocess_char_icon(img_gray: Mat):
         h, w = img_gray.shape[:2]
         img = cv2.copyMakeBorder(img_gray, w - h, 0, 0, 0, cv2.BORDER_REPLICATE)
         h, w = img.shape[:2]

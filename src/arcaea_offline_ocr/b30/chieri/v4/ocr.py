@@ -12,6 +12,7 @@ from ....ocr import (
     resize_fill_square,
 )
 from ....phash_db import ImagePhashDatabase
+from ....types import Mat
 from ....utils import construct_int_xywh_rect
 from ...shared import B30OcrResultItem
 from .colors import *
@@ -67,10 +68,10 @@ class ChieriBotV4Ocr:
     def factor(self, factor: float):
         self.__rois.factor = factor
 
-    def set_factor(self, img: cv2.Mat):
+    def set_factor(self, img: Mat):
         self.factor = img.shape[0] / 4400
 
-    def ocr_component_rating_class(self, component_bgr: cv2.Mat) -> int:
+    def ocr_component_rating_class(self, component_bgr: Mat) -> int:
         rating_class_rect = construct_int_xywh_rect(
             self.rois.component_rois.rating_class_rect
         )
@@ -87,7 +88,7 @@ class ChieriBotV4Ocr:
         else:
             return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
 
-    def ocr_component_song_id(self, component_bgr: cv2.Mat):
+    def ocr_component_song_id(self, component_bgr: Mat):
         jacket_rect = construct_int_xywh_rect(
             self.rois.component_rois.jacket_rect, floor
         )
@@ -96,7 +97,7 @@ class ChieriBotV4Ocr:
         )
         return self.phash_db.lookup_jacket(jacket_roi)[0]
 
-    def ocr_component_score_knn(self, component_bgr: cv2.Mat) -> int:
+    def ocr_component_score_knn(self, component_bgr: Mat) -> int:
         # sourcery skip: inline-immediately-returned-variable
         score_rect = construct_int_xywh_rect(self.rois.component_rois.score_rect)
         score_roi = cv2.cvtColor(
@@ -118,7 +119,7 @@ class ChieriBotV4Ocr:
             score_roi = cv2.fillPoly(score_roi, [contour], 0)
         return ocr_digits_by_contour_knn(score_roi, self.score_knn)
 
-    def find_pfl_rects(self, component_pfl_processed: cv2.Mat) -> List[List[int]]:
+    def find_pfl_rects(self, component_pfl_processed: Mat) -> List[List[int]]:
         # sourcery skip: inline-immediately-returned-variable
         pfl_roi_find = cv2.morphologyEx(
             component_pfl_processed,
@@ -144,7 +145,7 @@ class ChieriBotV4Ocr:
         ]
         return pfl_rects_adjusted
 
-    def preprocess_component_pfl(self, component_bgr: cv2.Mat) -> cv2.Mat:
+    def preprocess_component_pfl(self, component_bgr: Mat) -> Mat:
         pfl_rect = construct_int_xywh_rect(self.rois.component_rois.pfl_rect)
         pfl_roi = crop_xywh(component_bgr, pfl_rect)
         pfl_roi_hsv = cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2HSV)
@@ -184,7 +185,7 @@ class ChieriBotV4Ocr:
         return result_eroded if len(self.find_pfl_rects(result_eroded)) == 3 else result
 
     def ocr_component_pfl(
-        self, component_bgr: cv2.Mat
+        self, component_bgr: Mat
     ) -> Tuple[Optional[int], Optional[int], Optional[int]]:
         try:
             pfl_roi = self.preprocess_component_pfl(component_bgr)
@@ -215,7 +216,7 @@ class ChieriBotV4Ocr:
         except Exception:
             return (None, None, None)
 
-    def ocr_component(self, component_bgr: cv2.Mat) -> B30OcrResultItem:
+    def ocr_component(self, component_bgr: Mat) -> B30OcrResultItem:
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)
         rating_class = self.ocr_component_rating_class(component_blur)
         song_id = self.ocr_component_song_id(component_bgr)
@@ -234,7 +235,7 @@ class ChieriBotV4Ocr:
             date=None,
         )
 
-    def ocr(self, img_bgr: cv2.Mat) -> List[B30OcrResultItem]:
+    def ocr(self, img_bgr: Mat) -> List[B30OcrResultItem]:
         self.set_factor(img_bgr)
         return [
             self.ocr_component(component_bgr)

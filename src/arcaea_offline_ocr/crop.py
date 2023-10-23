@@ -4,24 +4,26 @@ from typing import Tuple
 import cv2
 import numpy as np
 
+from .types import Mat
+
 __all__ = ["crop_xywh", "CropBlackEdges"]
 
 
-def crop_xywh(mat: cv2.Mat, rect: Tuple[int, int, int, int]):
+def crop_xywh(mat: Mat, rect: Tuple[int, int, int, int]):
     x, y, w, h = rect
     return mat[y : y + h, x : x + w]
 
 
 class CropBlackEdges:
     @staticmethod
-    def is_black_edge(__img_gray_slice: cv2.Mat, black_pixel: int, ratio: float = 0.6):
+    def is_black_edge(__img_gray_slice: Mat, black_pixel: int, ratio: float = 0.6):
         pixels_compared = __img_gray_slice < black_pixel
         return np.count_nonzero(pixels_compared) > math.floor(
             __img_gray_slice.size * ratio
         )
 
     @classmethod
-    def get_crop_rect(cls, img_gray: cv2.Mat, black_threshold: int = 25):
+    def get_crop_rect(cls, img_gray: Mat, black_threshold: int = 25):
         height, width = img_gray.shape[:2]
         left = 0
         right = width
@@ -58,7 +60,7 @@ class CropBlackEdges:
 
     @classmethod
     def crop(
-        cls, img: cv2.Mat, convert_flag: cv2.COLOR_BGR2GRAY, black_threshold: int = 25
-    ) -> cv2.Mat:
+        cls, img: Mat, convert_flag: cv2.COLOR_BGR2GRAY, black_threshold: int = 25
+    ) -> Mat:
         rect = cls.get_crop_rect(cv2.cvtColor(img, convert_flag), black_threshold)
         return crop_xywh(img, rect)

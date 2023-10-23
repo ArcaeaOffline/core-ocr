@@ -1,11 +1,10 @@
-import cv2
-
 from ....crop import crop_xywh
+from ....types import Mat
 from ..definition.common import DeviceRois
 
 
 class DeviceRoisExtractor:
-    def __init__(self, img: cv2.Mat, rois: DeviceRois):
+    def __init__(self, img: Mat, rois: DeviceRois):
         self.img = img
         self.sizes = rois
 

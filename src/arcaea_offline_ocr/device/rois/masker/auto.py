@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+from ....types import Mat
 from .common import DeviceRoisMasker
 
 
@@ -40,7 +41,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
     PURE_MEMORY_HSV_MAX = np.array([110, 200, 175], np.uint8)
 
     @classmethod
-    def gray(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def gray(cls, roi_bgr: Mat) -> Mat:
         bgr_value_equal_mask = np.max(roi_bgr, axis=2) - np.min(roi_bgr, axis=2) <= 5
         img_bgr = roi_bgr.copy()
         img_bgr[~bgr_value_equal_mask] = np.array([0, 0, 0], roi_bgr.dtype)
@@ -49,19 +50,19 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         return cv2.inRange(img_bgr, cls.GRAY_BGR_MIN, cls.GRAY_BGR_MAX)
 
     @classmethod
-    def pure(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def pure(cls, roi_bgr: Mat) -> Mat:
         return cls.gray(roi_bgr)
 
     @classmethod
-    def far(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def far(cls, roi_bgr: Mat) -> Mat:
         return cls.gray(roi_bgr)
 
     @classmethod
-    def lost(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def lost(cls, roi_bgr: Mat) -> Mat:
         return cls.gray(roi_bgr)
 
     @classmethod
-    def score(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def score(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.WHITE_HSV_MIN,
@@ -69,35 +70,35 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def rating_class_pst(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_pst(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.PST_HSV_MIN, cls.PST_HSV_MAX
         )
 
     @classmethod
-    def rating_class_prs(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_prs(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.PRS_HSV_MIN, cls.PRS_HSV_MAX
         )
 
     @classmethod
-    def rating_class_ftr(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_ftr(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.FTR_HSV_MIN, cls.FTR_HSV_MAX
         )
 
     @classmethod
-    def rating_class_byd(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_byd(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.BYD_HSV_MIN, cls.BYD_HSV_MAX
         )
 
     @classmethod
-    def max_recall(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def max_recall(cls, roi_bgr: Mat) -> Mat:
         return cls.gray(roi_bgr)
 
     @classmethod
-    def clear_status_track_lost(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_track_lost(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.TRACK_LOST_HSV_MIN,
@@ -105,7 +106,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_track_complete(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_track_complete(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.TRACK_COMPLETE_HSV_MIN,
@@ -113,7 +114,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_full_recall(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_full_recall(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.FULL_RECALL_HSV_MIN,
@@ -121,7 +122,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_pure_memory(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_pure_memory(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.PURE_MEMORY_HSV_MIN,
@@ -164,25 +165,25 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     PURE_MEMORY_HSV_MAX = np.array([110, 200, 175], np.uint8)
 
     @classmethod
-    def pfl(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def pfl(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.PFL_HSV_MIN, cls.PFL_HSV_MAX
         )
 
     @classmethod
-    def pure(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def pure(cls, roi_bgr: Mat) -> Mat:
         return cls.pfl(roi_bgr)
 
     @classmethod
-    def far(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def far(cls, roi_bgr: Mat) -> Mat:
         return cls.pfl(roi_bgr)
 
     @classmethod
-    def lost(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def lost(cls, roi_bgr: Mat) -> Mat:
         return cls.pfl(roi_bgr)
 
     @classmethod
-    def score(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def score(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.WHITE_HSV_MIN,
@@ -190,31 +191,31 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def rating_class_pst(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_pst(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.PST_HSV_MIN, cls.PST_HSV_MAX
         )
 
     @classmethod
-    def rating_class_prs(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_prs(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.PRS_HSV_MIN, cls.PRS_HSV_MAX
         )
 
     @classmethod
-    def rating_class_ftr(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_ftr(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.FTR_HSV_MIN, cls.FTR_HSV_MAX
         )
 
     @classmethod
-    def rating_class_byd(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def rating_class_byd(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), cls.BYD_HSV_MIN, cls.BYD_HSV_MAX
         )
 
     @classmethod
-    def max_recall(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def max_recall(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.MAX_RECALL_HSV_MIN,
@@ -222,7 +223,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_track_lost(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_track_lost(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.TRACK_LOST_HSV_MIN,
@@ -230,7 +231,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_track_complete(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_track_complete(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.TRACK_COMPLETE_HSV_MIN,
@@ -238,7 +239,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_full_recall(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_full_recall(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.FULL_RECALL_HSV_MIN,
@@ -246,7 +247,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
-    def clear_status_pure_memory(cls, roi_bgr: cv2.Mat) -> cv2.Mat:
+    def clear_status_pure_memory(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
             cls.PURE_MEMORY_HSV_MIN,

@@ -1,6 +1,10 @@
 from collections.abc import Iterable
 from typing import NamedTuple, Tuple, Union
 
+import numpy as np
+
+Mat = np.ndarray
+
 
 class XYWHRect(NamedTuple):
     x: int

@@ -4,9 +4,11 @@ from typing import List, Union
 import cv2
 import numpy as np
 
+from .types import Mat
+
 
 def phash_opencv(img_gray, hash_size=8, highfreq_factor=4):
-    # type: (Union[cv2.Mat, np.ndarray], int, int) -> np.ndarray
+    # type: (Union[Mat, np.ndarray], int, int) -> np.ndarray
     """
     Perceptual Hash computation.
 
@@ -76,7 +78,7 @@ class ImagePhashDatabase:
                     self.jacket_ids.append(id)
                     self.jacket_hashes.append(hash)
 
-    def calculate_phash(self, img_gray: cv2.Mat):
+    def calculate_phash(self, img_gray: Mat):
         return phash_opencv(
             img_gray, hash_size=self.hash_size, highfreq_factor=self.highfreq_factor
         )
@@ -89,11 +91,11 @@ class ImagePhashDatabase:
         ]
         return sorted(xor_results, key=lambda r: r[1])[:limit]
 
-    def lookup_image(self, img_gray: cv2.Mat):
+    def lookup_image(self, img_gray: Mat):
         image_hash = self.calculate_phash(img_gray)
         return self.lookup_hash(image_hash)[0]
 
-    def lookup_jackets(self, img_gray: cv2.Mat, *, limit: int = 5):
+    def lookup_jackets(self, img_gray: Mat, *, limit: int = 5):
         image_hash = self.calculate_phash(img_gray).flatten()
         xor_results = [
             (id, np.count_nonzero(image_hash ^ h))
@@ -101,10 +103,10 @@ class ImagePhashDatabase:
         ]
         return sorted(xor_results, key=lambda r: r[1])[:limit]
 
-    def lookup_jacket(self, img_gray: cv2.Mat):
+    def lookup_jacket(self, img_gray: Mat):
         return self.lookup_jackets(img_gray)[0]
 
-    def lookup_partner_icons(self, img_gray: cv2.Mat, *, limit: int = 5):
+    def lookup_partner_icons(self, img_gray: Mat, *, limit: int = 5):
         image_hash = self.calculate_phash(img_gray).flatten()
         xor_results = [
             (id, np.count_nonzero(image_hash ^ h))
@@ -112,5 +114,5 @@ class ImagePhashDatabase:
         ]
         return sorted(xor_results, key=lambda r: r[1])[:limit]
 
-    def lookup_partner_icon(self, img_gray: cv2.Mat):
+    def lookup_partner_icon(self, img_gray: Mat):
         return self.lookup_partner_icons(img_gray)[0]

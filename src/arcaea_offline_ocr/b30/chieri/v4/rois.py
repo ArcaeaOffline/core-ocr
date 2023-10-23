@@ -1,9 +1,7 @@
 from typing import List, Optional
 
-import cv2
-
 from ....crop import crop_xywh
-from ....types import XYWHRect
+from ....types import Mat, XYWHRect
 from ....utils import apply_factor, construct_int_xywh_rect
 
 
@@ -110,7 +108,7 @@ class ChieriBotV4Rois:
     def b33_vertical_gap(self):
         return apply_factor(121, self.factor)
 
-    def components(self, img_bgr: cv2.Mat) -> List[cv2.Mat]:
+    def components(self, img_bgr: Mat) -> List[Mat]:
         first_rect = XYWHRect(x=self.left, y=self.top, w=self.width, h=self.height)
         results = []
 
