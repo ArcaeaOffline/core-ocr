@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arcaea-offline-ocr"
-version = "0.1.0"
+version = "0.0.95"
 authors = [{ name = "283375", email = "log_283375@163.com" }]
 description = "Extract your Arcaea play result from screenshot."
 readme = "README.md"
