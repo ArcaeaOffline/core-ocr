@@ -1,14 +1,11 @@
 import math
-from copy import deepcopy
 from typing import Optional, Sequence, Tuple
 
 import cv2
 import numpy as np
-from numpy.linalg import norm
 
 from .crop import crop_xywh
-from .mask import mask_byd, mask_ftr, mask_prs, mask_pst
-from .types import Mat, cv2_ml_KNearest
+from .types import Mat
 
 __all__ = [
     "FixRects",
@@ -65,8 +62,7 @@ class FixRects:
                 new_h = new_bottom - new_y
                 new_rects.append((new_x, new_y, new_w, new_h))
 
-        return_rects = deepcopy(rects)
-        return_rects = [r for r in return_rects if r not in consumed_rects]
+        return_rects = [r for r in rects if r not in consumed_rects]
         return_rects.extend(new_rects)
         return return_rects
 
@@ -81,42 +77,42 @@ class FixRects:
         new_rects = []
         for rect in rects:
             rx, ry, rw, rh = rect
-            if rw / rh > rect_wh_ratio:
-                # consider this is a connected contour
-                connected_rects.append(rect)
+            if rw / rh <= rect_wh_ratio:
+                continue
 
-                # find the thinnest part
-                border_ignore = round(rw * width_range_ratio)
-                img_cropped = crop_xywh(
-                    img_masked,
-                    (border_ignore, ry, rw - border_ignore, rh),
-                )
-                white_pixels = {}  # dict[x, white_pixel_number]
-                for i in range(img_cropped.shape[1]):
-                    col = img_cropped[:, i]
-                    white_pixels[rx + border_ignore + i] = np.count_nonzero(col > 200)
-                least_white_pixels = min(v for v in white_pixels.values() if v > 0)
-                x_values = [
-                    x
-                    for x, pixel in white_pixels.items()
-                    if pixel == least_white_pixels
-                ]
-                # select only middle values
-                x_mean = np.mean(x_values)
-                x_std = np.std(x_values)
-                x_values = [
-                    x
-                    for x in x_values
-                    if x_mean - x_std * 1.5 <= x <= x_mean + x_std * 1.5
-                ]
-                x_mid = round(np.median(x_values))
+            connected_rects.append(rect)
 
-                # split the rect
-                new_rects.extend(
-                    [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)]
-                )
+            # find the thinnest part
+            border_ignore = round(rw * width_range_ratio)
+            img_cropped = crop_xywh(
+                img_masked,
+                (border_ignore, ry, rw - border_ignore, rh),
+            )
+            white_pixels = {}  # dict[x, white_pixel_number]
+            for i in range(img_cropped.shape[1]):
+                col = img_cropped[:, i]
+                white_pixels[rx + border_ignore + i] = np.count_nonzero(col > 200)
 
-        return_rects = deepcopy(rects)
+            if all(v == 0 for v in white_pixels.values()):
+                return rects
+
+            least_white_pixels = min(v for v in white_pixels.values() if v > 0)
+            x_values = [
+                x for x, pixel in white_pixels.items() if pixel == least_white_pixels
+            ]
+            # select only middle values
+            x_mean = np.mean(x_values)
+            x_std = np.std(x_values)
+            x_values = [
+                x for x in x_values if x_mean - x_std * 1.5 <= x <= x_mean + x_std * 1.5
+            ]
+            x_mid = round(np.median(x_values))
+
+            # split the rect
+            new_rects.extend(
+                [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)]
+            )
+
         return_rects = [r for r in rects if r not in connected_rects]
         return_rects.extend(new_rects)
         return return_rects
@@ -145,33 +141,16 @@ def resize_fill_square(img: Mat, target: int = 20):
 
 
 def preprocess_hog(digit_rois):
-    # https://github.com/opencv/opencv/blob/f834736307c8328340aea48908484052170c9224/samples/python/digits.py
+    # https://learnopencv.com/handwritten-digits-classification-an-opencv-c-python-tutorial/
     samples = []
     for digit in digit_rois:
-        gx = cv2.Sobel(digit, cv2.CV_32F, 1, 0)
-        gy = cv2.Sobel(digit, cv2.CV_32F, 0, 1)
-        mag, ang = cv2.cartToPolar(gx, gy)
-        bin_n = 16
-        _bin = np.int32(bin_n * ang / (2 * np.pi))
-        bin_cells = _bin[:10, :10], _bin[10:, :10], _bin[:10, 10:], _bin[10:, 10:]
-        mag_cells = mag[:10, :10], mag[10:, :10], mag[:10, 10:], mag[10:, 10:]
-        hists = [
-            np.bincount(b.ravel(), m.ravel(), bin_n)
-            for b, m in zip(bin_cells, mag_cells)
-        ]
-        hist = np.hstack(hists)
-
-        # transform to Hellinger kernel
-        eps = 1e-7
-        hist /= hist.sum() + eps
-        hist = np.sqrt(hist)
-        hist /= norm(hist) + eps
-
+        hog = cv2.HOGDescriptor((20, 20), (10, 10), (5, 5), (10, 10), 9)
+        hist = hog.compute(digit)
         samples.append(hist)
     return np.float32(samples)
 
 
-def ocr_digit_samples_knn(__samples, knn_model: cv2_ml_KNearest, k: int = 4):
+def ocr_digit_samples_knn(__samples, knn_model: cv2.ml.KNearest, k: int = 4):
     _, results, _, _ = knn_model.findNearest(__samples, k)
     result_list = [int(r) for r in results.ravel()]
     result_str = "".join(str(r) for r in result_list if r > -1)
@@ -192,20 +171,10 @@ def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
 
 def ocr_digits_by_contour_knn(
     __roi_gray: Mat,
-    knn_model: cv2_ml_KNearest,
+    knn_model: cv2.ml.KNearest,
     *,
     k=4,
     size: int = 20,
 ) -> int:
     samples = ocr_digits_by_contour_get_samples(__roi_gray, size)
     return ocr_digit_samples_knn(samples, knn_model, k)
-
-
-def ocr_rating_class(roi_hsv: Mat):
-    mask_results = [
-        mask_pst(roi_hsv),
-        mask_prs(roi_hsv),
-        mask_ftr(roi_hsv),
-        mask_byd(roi_hsv),
-    ]
-    return max(enumerate(mask_results), key=lambda e: np.count_nonzero(e[1]))[0]

@@ -3,13 +3,16 @@ from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
-from PIL import Image
 
 from ....crop import crop_xywh
-from ....ocr import FixRects, ocr_digits_by_contour_knn, preprocess_hog
-from ....phash_db import ImagePHashDatabase
-from ....sift_db import SIFTDatabase
-from ....types import Mat, cv2_ml_KNearest
+from ....ocr import (
+    FixRects,
+    ocr_digits_by_contour_knn,
+    preprocess_hog,
+    resize_fill_square,
+)
+from ....phash_db import ImagePhashDatabase
+from ....types import Mat
 from ....utils import construct_int_xywh_rect
 from ...shared import B30OcrResultItem
 from .colors import *
@@ -19,9 +22,9 @@ from .rois import ChieriBotV4Rois
 class ChieriBotV4Ocr:
     def __init__(
         self,
-        score_knn: cv2_ml_KNearest,
-        pfl_knn: cv2_ml_KNearest,
-        phash_db: ImagePHashDatabase,
+        score_knn: cv2.ml.KNearest,
+        pfl_knn: cv2.ml.KNearest,
+        phash_db: ImagePhashDatabase,
         factor: Optional[float] = 1.0,
     ):
         self.__score_knn = score_knn
@@ -34,7 +37,7 @@ class ChieriBotV4Ocr:
         return self.__score_knn
 
     @score_knn.setter
-    def score_knn(self, knn_digits_model: Mat):
+    def score_knn(self, knn_digits_model: cv2.ml.KNearest):
         self.__score_knn = knn_digits_model
 
     @property
@@ -42,7 +45,7 @@ class ChieriBotV4Ocr:
         return self.__pfl_knn
 
     @pfl_knn.setter
-    def pfl_knn(self, knn_digits_model: Mat):
+    def pfl_knn(self, knn_digits_model: cv2.ml.KNearest):
         self.__pfl_knn = knn_digits_model
 
     @property
@@ -50,7 +53,7 @@ class ChieriBotV4Ocr:
         return self.__phash_db
 
     @phash_db.setter
-    def phash_db(self, phash_db: ImagePHashDatabase):
+    def phash_db(self, phash_db: ImagePhashDatabase):
         self.__phash_db = phash_db
 
     @property
@@ -85,14 +88,6 @@ class ChieriBotV4Ocr:
         else:
             return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
 
-    # def ocr_component_title(self, component_bgr: Mat) -> str:
-    #     # sourcery skip: inline-immediately-returned-variable
-    #     title_rect = construct_int_xywh_rect(self.rois.component_rois.title_rect)
-    #     title_roi = crop_xywh(component_bgr, title_rect)
-    #     ocr_result = self.sift_db.ocr(title_roi, cls=False)
-    #     title = ocr_result[0][-1][1][0] if ocr_result and ocr_result[0] else ""
-    #     return title
-
     def ocr_component_song_id(self, component_bgr: Mat):
         jacket_rect = construct_int_xywh_rect(
             self.rois.component_rois.jacket_rect, floor
@@ -100,20 +95,7 @@ class ChieriBotV4Ocr:
         jacket_roi = cv2.cvtColor(
             crop_xywh(component_bgr, jacket_rect), cv2.COLOR_BGR2GRAY
         )
-        return self.phash_db.lookup_image(Image.fromarray(jacket_roi))[0]
-
-    # def ocr_component_score_paddle(self, component_bgr: Mat) -> int:
-    #     # sourcery skip: inline-immediately-returned-variable
-    #     score_rect = construct_int_xywh_rect(self.rois.component_rois.score_rect)
-    #     score_roi = cv2.cvtColor(
-    #         crop_xywh(component_bgr, score_rect), cv2.COLOR_BGR2GRAY
-    #     )
-    #     _, score_roi = cv2.threshold(
-    #         score_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    #     )
-    #     score_str = self.sift_db.ocr(score_roi, cls=False)[0][-1][1][0]
-    #     score = int(score_str.replace("'", "").replace(" ", ""))
-    #     return score
+        return self.phash_db.lookup_jacket(jacket_roi)[0]
 
     def ocr_component_score_knn(self, component_bgr: Mat) -> int:
         # sourcery skip: inline-immediately-returned-variable
@@ -223,7 +205,7 @@ class ChieriBotV4Ocr:
                 digits = []
                 for digit_rect in digit_rects:
                     digit = crop_xywh(roi, digit_rect)
-                    digit = cv2.resize(digit, (20, 20))
+                    digit = resize_fill_square(digit, 20)
                     digits.append(digit)
                 samples = preprocess_hog(digits)
 
@@ -233,15 +215,6 @@ class ChieriBotV4Ocr:
             return tuple(pure_far_lost)
         except Exception:
             return (None, None, None)
-
-    # def ocr_component_date(self, component_bgr: Mat):
-    #     date_rect = construct_int_xywh_rect(self.rois.component_rois.date_rect)
-    #     date_roi = cv2.cvtColor(crop_xywh(component_bgr, date_rect), cv2.COLOR_BGR2GRAY)
-    #     _, date_roi = cv2.threshold(
-    #         date_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    #     )
-    #     date_str = self.sift_db.ocr(date_roi, cls=False)[0][-1][1][0]
-    #     return date_str
 
     def ocr_component(self, component_bgr: Mat) -> B30OcrResultItem:
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)
