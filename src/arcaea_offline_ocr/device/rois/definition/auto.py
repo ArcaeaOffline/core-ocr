@@ -120,7 +120,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         return (
             self.w_mid - w / 2,
             self.layout_area_h_mid - 155 * self.factor - h,
-            w,
+            w * 0.4,
             h,
         )
 
@@ -244,7 +244,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         return (
             self.w_mid - w / 2,
             self.layout_area_h_mid - 235 * self.factor - h,
-            w,
+            w * 0.4,
             h,
         )
 
