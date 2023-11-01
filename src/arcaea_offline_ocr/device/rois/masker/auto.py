@@ -13,8 +13,8 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
     GRAY_BGR_MIN = np.array([50] * 3, np.uint8)
     GRAY_BGR_MAX = np.array([160] * 3, np.uint8)
 
-    WHITE_HSV_MIN = np.array([0, 0, 240], np.uint8)
-    WHITE_HSV_MAX = np.array([179, 10, 255], np.uint8)
+    SCORE_HSV_MIN = np.array([0, 0, 180], np.uint8)
+    SCORE_HSV_MAX = np.array([179, 255, 255], np.uint8)
 
     PST_HSV_MIN = np.array([100, 50, 80], np.uint8)
     PST_HSV_MAX = np.array([100, 255, 255], np.uint8)
@@ -65,8 +65,8 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
     def score(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
-            cls.WHITE_HSV_MIN,
-            cls.WHITE_HSV_MAX,
+            cls.SCORE_HSV_MIN,
+            cls.SCORE_HSV_MAX,
         )
 
     @classmethod
@@ -134,8 +134,8 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     PFL_HSV_MIN = np.array([0, 0, 248], np.uint8)
     PFL_HSV_MAX = np.array([179, 10, 255], np.uint8)
 
-    WHITE_HSV_MIN = np.array([0, 0, 240], np.uint8)
-    WHITE_HSV_MAX = np.array([179, 10, 255], np.uint8)
+    SCORE_HSV_MIN = np.array([0, 0, 180], np.uint8)
+    SCORE_HSV_MAX = np.array([179, 255, 255], np.uint8)
 
     PST_HSV_MIN = np.array([100, 50, 80], np.uint8)
     PST_HSV_MAX = np.array([100, 255, 255], np.uint8)
@@ -186,8 +186,8 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     def score(cls, roi_bgr: Mat) -> Mat:
         return cv2.inRange(
             cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
-            cls.WHITE_HSV_MIN,
-            cls.WHITE_HSV_MAX,
+            cls.SCORE_HSV_MIN,
+            cls.SCORE_HSV_MAX,
         )
 
     @classmethod
