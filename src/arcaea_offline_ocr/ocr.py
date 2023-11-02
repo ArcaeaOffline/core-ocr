@@ -36,7 +36,7 @@ class FixRects:
             if rect in consumed_rects:
                 continue
 
-            x, y, w, h = rect
+            x, _, w, h = rect
             # grab those small rects
             if not img_height * 0.1 <= h <= img_height * 0.6:
                 continue
@@ -46,7 +46,7 @@ class FixRects:
             for other_rect in rects:
                 if rect == other_rect:
                     continue
-                ox, oy, ow, oh = other_rect
+                ox, _, ow, _ = other_rect
                 if abs(x - ox) < tolerance and abs((x + w) - (ox + ow)) < tolerance:
                     group.append(other_rect)
 

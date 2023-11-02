@@ -42,5 +42,5 @@ def apply_factor(item: T, factor: float) -> T:
 def apply_factor(item, factor: float):
     if isinstance(item, (int, float)):
         return item * factor
-    elif isinstance(item, Iterable):
+    if isinstance(item, Iterable):
         return item.__class__([i * factor for i in item])

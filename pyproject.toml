@@ -25,3 +25,14 @@ src_paths = ["src/arcaea_offline_ocr"]
 
 [tool.pyright]
 ignore = ["**/__debug*.*"]
+
+[tool.pylint.main]
+# extension-pkg-allow-list = ["cv2"]
+generated-members = ["cv2.*"]
+
+[tool.pylint.logging]
+disable = [
+  "missing-module-docstring",
+  "missing-class-docstring",
+  "missing-function-docstring"
+]
