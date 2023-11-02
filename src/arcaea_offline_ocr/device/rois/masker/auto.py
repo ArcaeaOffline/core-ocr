@@ -6,6 +6,8 @@ from .common import DeviceRoisMasker
 
 
 class DeviceRoisMaskerAuto(DeviceRoisMasker):
+    # pylint: disable=abstract-method
+
     @staticmethod
     def mask_bgr_in_hsv(roi_bgr: Mat, hsv_lower: Mat, hsv_upper: Mat):
         return cv2.inRange(

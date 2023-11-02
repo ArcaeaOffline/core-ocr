@@ -12,7 +12,8 @@ def phash_opencv(img_gray, hash_size=8, highfreq_factor=4):
     """
     Perceptual Hash computation.
 
-    Implementation follows http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
+    Implementation follows
+    http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 
     Adapted from `imagehash.phash`, pure opencv implementation
 
@@ -69,14 +70,14 @@ class ImagePhashDatabase:
             self.partner_icon_ids: List[str] = []
             self.partner_icon_hashes = []
 
-            for id, hash in zip(self.ids, self.hashes):
-                id_splitted = id.split("||")
+            for _id, _hash in zip(self.ids, self.hashes):
+                id_splitted = _id.split("||")
                 if len(id_splitted) > 1 and id_splitted[0] == "partner_icon":
                     self.partner_icon_ids.append(id_splitted[1])
-                    self.partner_icon_hashes.append(hash)
+                    self.partner_icon_hashes.append(_hash)
                 else:
-                    self.jacket_ids.append(id)
-                    self.jacket_hashes.append(hash)
+                    self.jacket_ids.append(_id)
+                    self.jacket_hashes.append(_hash)
 
     def calculate_phash(self, img_gray: Mat):
         return phash_opencv(

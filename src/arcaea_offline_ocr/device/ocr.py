@@ -67,8 +67,9 @@ class DeviceOcr:
         roi = self.masker.score(self.extractor.score)
         contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            if h < roi.shape[0] * 0.6:
+            if (
+                cv2.boundingRect(contour)[3] < roi.shape[0] * 0.6
+            ):  # h < score_component_h * 0.6
                 roi = cv2.fillPoly(roi, [contour], [0])
         return ocr_digits_by_contour_knn(roi, self.knn_model)
 
