@@ -35,6 +35,10 @@ class DeviceRoisMasker:
         raise NotImplementedError()
 
     @classmethod
+    def rating_class_etr(cls, roi_bgr: Mat) -> Mat:
+        raise NotImplementedError()
+
+    @classmethod
     def max_recall(cls, roi_bgr: Mat) -> Mat:
         raise NotImplementedError()
 

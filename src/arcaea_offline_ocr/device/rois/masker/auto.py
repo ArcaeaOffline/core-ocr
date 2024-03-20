@@ -34,6 +34,9 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
     BYD_HSV_MIN = np.array([170, 50, 50], np.uint8)
     BYD_HSV_MAX = np.array([179, 210, 198], np.uint8)
 
+    ETR_HSV_MIN = np.array([130, 60, 80], np.uint8)
+    ETR_HSV_MAX = np.array([140, 145, 180], np.uint8)
+
     TRACK_LOST_HSV_MIN = np.array([170, 75, 90], np.uint8)
     TRACK_LOST_HSV_MAX = np.array([175, 170, 160], np.uint8)
 
@@ -88,6 +91,10 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         return cls.mask_bgr_in_hsv(roi_bgr, cls.BYD_HSV_MIN, cls.BYD_HSV_MAX)
 
     @classmethod
+    def rating_class_etr(cls, roi_bgr: Mat) -> Mat:
+        return cls.mask_bgr_in_hsv(roi_bgr, cls.ETR_HSV_MIN, cls.ETR_HSV_MAX)
+
+    @classmethod
     def max_recall(cls, roi_bgr: Mat) -> Mat:
         return cls.gray(roi_bgr)
 
@@ -134,6 +141,9 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
 
     BYD_HSV_MIN = np.array([170, 50, 50], np.uint8)
     BYD_HSV_MAX = np.array([179, 210, 198], np.uint8)
+
+    ETR_HSV_MIN = np.array([130, 60, 80], np.uint8)
+    ETR_HSV_MAX = np.array([140, 145, 180], np.uint8)
 
     MAX_RECALL_HSV_MIN = np.array([125, 0, 0], np.uint8)
     MAX_RECALL_HSV_MAX = np.array([145, 100, 150], np.uint8)
@@ -185,6 +195,10 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     @classmethod
     def rating_class_byd(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.BYD_HSV_MIN, cls.BYD_HSV_MAX)
+
+    @classmethod
+    def rating_class_etr(cls, roi_bgr: Mat) -> Mat:
+        return cls.mask_bgr_in_hsv(roi_bgr, cls.ETR_HSV_MIN, cls.ETR_HSV_MAX)
 
     @classmethod
     def max_recall(cls, roi_bgr: Mat) -> Mat:

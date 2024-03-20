@@ -80,6 +80,7 @@ class DeviceOcr:
             self.masker.rating_class_prs(roi),
             self.masker.rating_class_ftr(roi),
             self.masker.rating_class_byd(roi),
+            self.masker.rating_class_etr(roi),
         ]
         return max(enumerate(results), key=lambda i: np.count_nonzero(i[1]))[0]
 
