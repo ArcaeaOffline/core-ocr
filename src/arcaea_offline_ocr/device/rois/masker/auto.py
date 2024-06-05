@@ -125,7 +125,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
 
 class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     PFL_HSV_MIN = np.array([0, 0, 248], np.uint8)
-    PFL_HSV_MAX = np.array([179, 10, 255], np.uint8)
+    PFL_HSV_MAX = np.array([179, 40, 255], np.uint8)
 
     SCORE_HSV_MIN = np.array([0, 0, 180], np.uint8)
     SCORE_HSV_MAX = np.array([179, 255, 255], np.uint8)
