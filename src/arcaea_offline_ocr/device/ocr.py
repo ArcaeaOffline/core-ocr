@@ -110,7 +110,7 @@ class DeviceOcr:
     @staticmethod
     def preprocess_char_icon(img_gray: Mat):
         h, w = img_gray.shape[:2]
-        img = cv2.copyMakeBorder(img_gray, w - h, 0, 0, 0, cv2.BORDER_REPLICATE)
+        img = cv2.copyMakeBorder(img_gray, max(w - h, 0), 0, 0, 0, cv2.BORDER_REPLICATE)
         h, w = img.shape[:2]
         img = cv2.fillPoly(
             img,
