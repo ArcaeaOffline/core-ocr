@@ -1,10 +1,9 @@
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-import attrs
 
-
-@attrs.define
+@dataclass
 class B30OcrResultItem:
     rating_class: int
     score: int

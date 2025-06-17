@@ -1,9 +1,8 @@
+from dataclasses import dataclass
 from typing import Optional
 
-import attrs
 
-
-@attrs.define
+@dataclass
 class DeviceOcrResult:
     rating_class: int
     pure: int
