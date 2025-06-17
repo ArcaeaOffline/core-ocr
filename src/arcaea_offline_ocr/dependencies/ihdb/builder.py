@@ -51,7 +51,7 @@ class ImageHashesDatabaseBuilder:
                     rows.append(
                         ImageHash(
                             hash_type=hash_type,
-                            type=task.type,
+                            category=task.category,
                             label=task.label,
                             hash=ImageHashesDatabase.hash_mat_to_bytes(hash_mat),
                         )
@@ -61,7 +61,7 @@ class ImageHashesDatabaseBuilder:
 
         conn.execute("CREATE TABLE properties (`key` VARCHAR, `value` VARCHAR)")
         conn.execute(
-            "CREATE TABLE hashes (`hash_type` INTEGER, `type` INTEGER, `label` VARCHAR, `hash` BLOB)"
+            "CREATE TABLE hashes (`hash_type` INTEGER, `category` INTEGER, `label` VARCHAR, `hash` BLOB)"
         )
 
         now = datetime.now(tz=timezone.utc)
@@ -76,9 +76,9 @@ class ImageHashesDatabaseBuilder:
         )
 
         conn.executemany(
-            "INSERT INTO hashes (hash_type, type, label, hash) VALUES (?, ?, ?, ?)",
+            "INSERT INTO hashes (hash_type, category, label, hash) VALUES (?, ?, ?, ?)",
             [
-                (row.hash_type.value, row.type.value, row.label, row.hash)
+                (row.hash_type.value, row.category.value, row.label, row.hash)
                 for row in rows
             ],
         )

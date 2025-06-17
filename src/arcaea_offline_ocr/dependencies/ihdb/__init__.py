@@ -4,7 +4,7 @@ from .models import (
     ImageHashBuildTask,
     ImageHashHashType,
     ImageHashResult,
-    ImageHashType,
+    ImageHashCategory,
 )
 
 __all__ = [
@@ -12,7 +12,7 @@ __all__ = [
     "ImageHashesDatabasePropertyMissingError",
     "ImageHashHashType",
     "ImageHashResult",
-    "ImageHashType",
+    "ImageHashCategory",
     "ImageHashesDatabaseBuilder",
     "ImageHashBuildTask",
 ]

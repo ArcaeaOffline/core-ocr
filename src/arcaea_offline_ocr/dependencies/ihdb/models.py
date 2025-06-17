@@ -13,7 +13,7 @@ class ImageHashHashType(IntEnum):
     DCT = 2
 
 
-class ImageHashType(IntEnum):
+class ImageHashCategory(IntEnum):
     JACKET = 0
     PARTNER_ICON = 1
 
@@ -21,7 +21,7 @@ class ImageHashType(IntEnum):
 @dataclasses.dataclass
 class ImageHash:
     hash_type: ImageHashHashType
-    type: ImageHashType
+    category: ImageHashCategory
     label: str
     hash: bytes
 
@@ -29,7 +29,7 @@ class ImageHash:
 @dataclasses.dataclass
 class ImageHashResult:
     hash_type: ImageHashHashType
-    type: ImageHashType
+    category: ImageHashCategory
     label: str
     confidence: float
 
@@ -41,6 +41,6 @@ def _default_imread_gray(image_path: str):
 @dataclasses.dataclass
 class ImageHashBuildTask:
     image_path: str
-    type: ImageHashType
+    category: ImageHashCategory
     label: str
     imread_function: Callable[[str], Mat] = _default_imread_gray
