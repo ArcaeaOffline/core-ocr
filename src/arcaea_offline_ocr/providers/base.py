@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from dataclasses import dataclass
+from enum import IntEnum
+from typing import TYPE_CHECKING, Any, Sequence, Optional
 
 if TYPE_CHECKING:
     from ..types import Mat
@@ -10,3 +12,27 @@ class OcrTextProvider(ABC):
     def result_raw(self, img: "Mat", /, *args, **kwargs) -> Any: ...
     @abstractmethod
     def result(self, img: "Mat", /, *args, **kwargs) -> Optional[str]: ...
+
+
+class ImageCategory(IntEnum):
+    JACKET = 0
+    PARTNER_ICON = 1
+
+
+@dataclass(kw_only=True)
+class ImageIdProviderResult:
+    image_id: str
+    category: ImageCategory
+    confidence: float
+
+
+class ImageIdProvider(ABC):
+    @abstractmethod
+    def result(
+        self, img: "Mat", category: ImageCategory, /, *args, **kwargs
+    ) -> ImageIdProviderResult: ...
+
+    @abstractmethod
+    def results(
+        self, img: "Mat", category: ImageCategory, /, *args, **kwargs
+    ) -> Sequence[ImageIdProviderResult]: ...
