@@ -5,10 +5,10 @@ from typing import Optional
 @dataclass
 class DeviceOcrResult:
     rating_class: int
-    pure: int
-    far: int
-    lost: int
     score: int
+    pure: Optional[int] = None
+    far: Optional[int] = None
+    lost: Optional[int] = None
     max_recall: Optional[int] = None
     song_id: Optional[str] = None
     song_id_possibility: Optional[float] = None

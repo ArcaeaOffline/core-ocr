@@ -4,12 +4,6 @@ import cv2
 import numpy as np
 
 from ....crop import crop_xywh
-from ....ocr import (
-    FixRects,
-    ocr_digits_by_contour_knn,
-    preprocess_hog,
-    resize_fill_square,
-)
 from ....phash_db import ImagePhashDatabase
 from ....types import Mat
 from ...shared import B30OcrResultItem
@@ -28,36 +22,21 @@ from .colors import (
     PURE_BG_MIN_HSV,
 )
 from .rois import ChieriBotV4Rois
+from ....providers.knn import OcrKNearestTextProvider
 
 
 class ChieriBotV4Ocr:
     def __init__(
         self,
-        score_knn: cv2.ml.KNearest,
-        pfl_knn: cv2.ml.KNearest,
+        score_knn_provider: OcrKNearestTextProvider,
+        pfl_knn_provider: OcrKNearestTextProvider,
         phash_db: ImagePhashDatabase,
         factor: float = 1.0,
     ):
-        self.__score_knn = score_knn
-        self.__pfl_knn = pfl_knn
         self.__phash_db = phash_db
         self.__rois = ChieriBotV4Rois(factor)
-
-    @property
-    def score_knn(self):
-        return self.__score_knn
-
-    @score_knn.setter
-    def score_knn(self, knn_digits_model: cv2.ml.KNearest):
-        self.__score_knn = knn_digits_model
-
-    @property
-    def pfl_knn(self):
-        return self.__pfl_knn
-
-    @pfl_knn.setter
-    def pfl_knn(self, knn_digits_model: cv2.ml.KNearest):
-        self.__pfl_knn = knn_digits_model
+        self.pfl_knn_provider = pfl_knn_provider
+        self.score_knn_provider = score_knn_provider
 
     @property
     def phash_db(self):
@@ -125,7 +104,9 @@ class ChieriBotV4Ocr:
             if rect[3] > score_roi.shape[0] * 0.5:
                 continue
             score_roi = cv2.fillPoly(score_roi, [contour], 0)
-        return ocr_digits_by_contour_knn(score_roi, self.score_knn)
+
+        ocr_result = self.score_knn_provider.result(score_roi)
+        return int(ocr_result) if ocr_result else 0
 
     def find_pfl_rects(
         self, component_pfl_processed: Mat
@@ -203,25 +184,9 @@ class ChieriBotV4Ocr:
             pure_far_lost = []
             for pfl_roi_rect in pfl_rects:
                 roi = crop_xywh(pfl_roi, pfl_roi_rect)
-                digit_contours, _ = cv2.findContours(
-                    roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-                )
-                digit_rects = [cv2.boundingRect(c) for c in digit_contours]
-                digit_rects = FixRects.connect_broken(
-                    digit_rects, roi.shape[1], roi.shape[0]
-                )
-                digit_rects = FixRects.split_connected(roi, digit_rects)
-                digit_rects = sorted(digit_rects, key=lambda r: r[0])
-                digits = []
-                for digit_rect in digit_rects:
-                    digit = crop_xywh(roi, digit_rect)
-                    digit = resize_fill_square(digit, 20)
-                    digits.append(digit)
-                samples = preprocess_hog(digits)
+                result = self.pfl_knn_provider.result(roi)
+                pure_far_lost.append(int(result) if result else None)
 
-                _, results, _, _ = self.pfl_knn.findNearest(samples, 4)
-                results = [str(int(i)) for i in results.ravel()]
-                pure_far_lost.append(int("".join(results)))
             return tuple(pure_far_lost)
         except Exception:
             return (None, None, None)

@@ -1,18 +1,19 @@
+import logging
 import math
-from typing import Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
 
 import cv2
 import numpy as np
 
-from .crop import crop_xywh
-from .types import Mat
+from ..crop import crop_xywh
+from .base import OcrTextProvider
 
-__all__ = [
-    "FixRects",
-    "preprocess_hog",
-    "ocr_digits_by_contour_get_samples",
-    "ocr_digits_by_contour_knn",
-]
+if TYPE_CHECKING:
+    from cv2.ml import KNearest
+
+    from ..types import Mat
+
+logger = logging.getLogger(__name__)
 
 
 class FixRects:
@@ -68,7 +69,7 @@ class FixRects:
 
     @staticmethod
     def split_connected(
-        img_masked: Mat,
+        img_masked: "Mat",
         rects: Sequence[Tuple[int, int, int, int]],
         rect_wh_ratio: float = 1.05,
         width_range_ratio: float = 0.1,
@@ -118,7 +119,7 @@ class FixRects:
         return return_rects
 
 
-def resize_fill_square(img: Mat, target: int = 20):
+def resize_fill_square(img: "Mat", target: int = 20):
     h, w = img.shape[:2]
     if h > w:
         new_h = target
@@ -152,29 +153,88 @@ def preprocess_hog(digit_rois):
 
 def ocr_digit_samples_knn(__samples, knn_model: cv2.ml.KNearest, k: int = 4):
     _, results, _, _ = knn_model.findNearest(__samples, k)
-    result_list = [int(r) for r in results.ravel()]
-    result_str = "".join(str(r) for r in result_list if r > -1)
-    return int(result_str) if result_str else 0
+    return [int(r) for r in results.ravel()]
 
 
-def ocr_digits_by_contour_get_samples(__roi_gray: Mat, size: int):
-    roi = __roi_gray.copy()
-    contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    rects = [cv2.boundingRect(c) for c in contours]
-    rects = FixRects.connect_broken(rects, roi.shape[1], roi.shape[0])
-    rects = FixRects.split_connected(roi, rects)
-    rects = sorted(rects, key=lambda r: r[0])
-    # digit_rois = [cv2.resize(crop_xywh(roi, rect), size) for rect in rects]
-    digit_rois = [resize_fill_square(crop_xywh(roi, rect), size) for rect in rects]
-    return preprocess_hog(digit_rois)
+class OcrKNearestTextProvider(OcrTextProvider):
+    _ContourFilter = Callable[["Mat"], bool]
+    _RectsFilter = Callable[[Sequence[int]], bool]
 
+    def __init__(self, model: "KNearest"):
+        self.model = model
 
-def ocr_digits_by_contour_knn(
-    __roi_gray: Mat,
-    knn_model: cv2.ml.KNearest,
-    *,
-    k=4,
-    size: int = 20,
-) -> int:
-    samples = ocr_digits_by_contour_get_samples(__roi_gray, size)
-    return ocr_digit_samples_knn(samples, knn_model, k)
+    def contours(
+        self, img: "Mat", /, *, contours_filter: Optional[_ContourFilter] = None
+    ):
+        cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if contours_filter:
+            cnts = list(filter(contours_filter, cnts))
+
+        return cnts
+
+    def result_raw(
+        self,
+        img: "Mat",
+        /,
+        *,
+        fix_rects: bool = True,
+        contours_filter: Optional[_ContourFilter] = None,
+        rects_filter: Optional[_RectsFilter] = None,
+    ):
+        """
+        :param img: grayscaled roi
+        """
+
+        try:
+            cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if contours_filter:
+                cnts = list(filter(contours_filter, cnts))
+
+            rects = [cv2.boundingRect(cnt) for cnt in cnts]
+            if fix_rects and rects_filter:
+                rects = FixRects.connect_broken(rects, img.shape[1], img.shape[0])  # type: ignore
+                rects = list(filter(rects_filter, rects))
+                rects = FixRects.split_connected(img, rects)
+            elif fix_rects:
+                rects = FixRects.connect_broken(rects, img.shape[1], img.shape[0])  # type: ignore
+                rects = FixRects.split_connected(img, rects)
+            elif rects_filter:
+                rects = list(filter(rects_filter, rects))
+
+            rects = sorted(rects, key=lambda r: r[0])
+
+            digits = []
+            for rect in rects:
+                digit = crop_xywh(img, rect)
+                digit = resize_fill_square(digit, 20)
+                digits.append(digit)
+            samples = preprocess_hog(digits)
+            return ocr_digit_samples_knn(samples, self.model)
+        except Exception:
+            logger.exception("Error occurred during KNearest OCR")
+            return None
+
+    def result(
+        self,
+        img: "Mat",
+        /,
+        *,
+        fix_rects: bool = True,
+        contours_filter: Optional[_ContourFilter] = None,
+        rects_filter: Optional[_RectsFilter] = None,
+    ):
+        """
+        :param img: grayscaled roi
+        """
+
+        raw = self.result_raw(
+            img,
+            fix_rects=fix_rects,
+            contours_filter=contours_filter,
+            rects_filter=rects_filter,
+        )
+        return (
+            "".join(["".join(str(r) for r in raw if r > -1)])
+            if raw is not None
+            else None
+        )

@@ -1,15 +1,8 @@
 import cv2
 import numpy as np
 
-from ..crop import crop_xywh
-from ..ocr import (
-    FixRects,
-    ocr_digit_samples_knn,
-    ocr_digits_by_contour_knn,
-    preprocess_hog,
-    resize_fill_square,
-)
 from ..phash_db import ImagePhashDatabase
+from ..providers.knn import OcrKNearestTextProvider
 from ..types import Mat
 from .common import DeviceOcrResult
 from .rois.extractor import DeviceRoisExtractor
@@ -21,38 +14,37 @@ class DeviceOcr:
         self,
         extractor: DeviceRoisExtractor,
         masker: DeviceRoisMasker,
-        knn_model: cv2.ml.KNearest,
+        knn_provider: OcrKNearestTextProvider,
         phash_db: ImagePhashDatabase,
     ):
         self.extractor = extractor
         self.masker = masker
-        self.knn_model = knn_model
+        self.knn_provider = knn_provider
         self.phash_db = phash_db
 
     def pfl(self, roi_gray: Mat, factor: float = 1.25):
-        contours, _ = cv2.findContours(
-            roi_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
-        )
-        filtered_contours = [c for c in contours if cv2.contourArea(c) >= 5 * factor]
-        rects = [cv2.boundingRect(c) for c in filtered_contours]
-        rects = FixRects.connect_broken(rects, roi_gray.shape[1], roi_gray.shape[0])
+        def contour_filter(cnt):
+            return cv2.contourArea(cnt) >= 5 * factor
 
-        filtered_rects = [r for r in rects if r[2] >= 5 * factor and r[3] >= 6 * factor]
-        filtered_rects = FixRects.split_connected(roi_gray, filtered_rects)
-        filtered_rects = sorted(filtered_rects, key=lambda r: r[0])
+        contours = self.knn_provider.contours(roi_gray)
+        contours_filtered = self.knn_provider.contours(
+            roi_gray, contours_filter=contour_filter
+        )
 
         roi_ocr = roi_gray.copy()
-        filtered_contours_flattened = {tuple(c.flatten()) for c in filtered_contours}
+        contours_filtered_flattened = {tuple(c.flatten()) for c in contours_filtered}
         for contour in contours:
-            if tuple(contour.flatten()) in filtered_contours_flattened:
+            if tuple(contour.flatten()) in contours_filtered_flattened:
                 continue
             roi_ocr = cv2.fillPoly(roi_ocr, [contour], [0])
-        digit_rois = [
-            resize_fill_square(crop_xywh(roi_ocr, r), 20) for r in filtered_rects
-        ]
 
-        samples = preprocess_hog(digit_rois)
-        return ocr_digit_samples_knn(samples, self.knn_model)
+        ocr_result = self.knn_provider.result(
+            roi_ocr,
+            contours_filter=lambda cnt: cv2.contourArea(cnt) >= 5 * factor,
+            rects_filter=lambda rect: rect[2] >= 5 * factor and rect[3] >= 6 * factor,
+        )
+
+        return int(ocr_result) if ocr_result else 0
 
     def pure(self):
         return self.pfl(self.masker.pure(self.extractor.pure))
@@ -65,13 +57,14 @@ class DeviceOcr:
 
     def score(self):
         roi = self.masker.score(self.extractor.score)
-        contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        contours = self.knn_provider.contours(roi)
         for contour in contours:
             if (
                 cv2.boundingRect(contour)[3] < roi.shape[0] * 0.6
             ):  # h < score_component_h * 0.6
                 roi = cv2.fillPoly(roi, [contour], [0])
-        return ocr_digits_by_contour_knn(roi, self.knn_model)
+        ocr_result = self.knn_provider.result(roi)
+        return int(ocr_result) if ocr_result else 0
 
     def rating_class(self):
         roi = self.extractor.rating_class
@@ -85,9 +78,10 @@ class DeviceOcr:
         return max(enumerate(results), key=lambda i: np.count_nonzero(i[1]))[0]
 
     def max_recall(self):
-        return ocr_digits_by_contour_knn(
-            self.masker.max_recall(self.extractor.max_recall), self.knn_model
+        ocr_result = self.knn_provider.result(
+            self.masker.max_recall(self.extractor.max_recall)
         )
+        return int(ocr_result) if ocr_result else None
 
     def clear_status(self):
         roi = self.extractor.clear_status
