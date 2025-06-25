@@ -1,8 +1,7 @@
 from typing import List
 
-from ....crop import crop_xywh
-from ....types import Mat, XYWHRect
-from ....utils import apply_factor
+from arcaea_offline_ocr.crop import crop_xywh
+from arcaea_offline_ocr.types import Mat, XYWHRect
 
 
 class ChieriBotV4ComponentRois:
@@ -19,39 +18,39 @@ class ChieriBotV4ComponentRois:
 
     @property
     def top_font_color_detect(self):
-        return apply_factor(XYWHRect(35, 10, 120, 100), self.factor)
+        return XYWHRect(35, 10, 120, 100), self.factor
 
     @property
     def bottom_font_color_detect(self):
-        return apply_factor(XYWHRect(30, 125, 175, 110), self.factor)
+        return XYWHRect(30, 125, 175, 110) * self.factor
 
     @property
     def bg_point(self):
-        return apply_factor((75, 10), self.factor)
+        return (75 * self.factor, 10 * self.factor)
 
     @property
     def rating_class_rect(self):
-        return apply_factor(XYWHRect(21, 40, 7, 20), self.factor)
+        return XYWHRect(21, 40, 7, 20) * self.factor
 
     @property
     def title_rect(self):
-        return apply_factor(XYWHRect(35, 10, 430, 50), self.factor)
+        return XYWHRect(35, 10, 430, 50) * self.factor
 
     @property
     def jacket_rect(self):
-        return apply_factor(XYWHRect(263, 0, 239, 239), self.factor)
+        return XYWHRect(263, 0, 239, 239) * self.factor
 
     @property
     def score_rect(self):
-        return apply_factor(XYWHRect(30, 60, 270, 55), self.factor)
+        return XYWHRect(30, 60, 270, 55) * self.factor
 
     @property
     def pfl_rect(self):
-        return apply_factor(XYWHRect(50, 125, 80, 100), self.factor)
+        return XYWHRect(50, 125, 80, 100) * self.factor
 
     @property
     def date_rect(self):
-        return apply_factor(XYWHRect(205, 200, 225, 25), self.factor)
+        return XYWHRect(205, 200, 225, 25) * self.factor
 
 
 class ChieriBotV4Rois:
@@ -74,27 +73,27 @@ class ChieriBotV4Rois:
 
     @property
     def top(self):
-        return apply_factor(823, self.factor)
+        return 823 * self.factor
 
     @property
     def left(self):
-        return apply_factor(107, self.factor)
+        return 107 * self.factor
 
     @property
     def width(self):
-        return apply_factor(502, self.factor)
+        return 502 * self.factor
 
     @property
     def height(self):
-        return apply_factor(240, self.factor)
+        return 240 * self.factor
 
     @property
     def vertical_gap(self):
-        return apply_factor(74, self.factor)
+        return 74 * self.factor
 
     @property
     def horizontal_gap(self):
-        return apply_factor(40, self.factor)
+        return 40 * self.factor
 
     @property
     def horizontal_items(self):
@@ -104,7 +103,7 @@ class ChieriBotV4Rois:
 
     @property
     def b33_vertical_gap(self):
-        return apply_factor(121, self.factor)
+        return 121 * self.factor
 
     def components(self, img_bgr: Mat) -> List[Mat]:
         first_rect = XYWHRect(x=self.left, y=self.top, w=self.width, h=self.height)

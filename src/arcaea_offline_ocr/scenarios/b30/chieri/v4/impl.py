@@ -3,10 +3,16 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 
-from ....crop import crop_xywh
-from ....phash_db import ImagePhashDatabase
-from ....types import Mat
-from ...shared import B30OcrResultItem
+from arcaea_offline_ocr.crop import crop_xywh
+from arcaea_offline_ocr.providers import (
+    ImageCategory,
+    ImageIdProvider,
+    OcrKNearestTextProvider,
+)
+from arcaea_offline_ocr.scenarios.b30.base import Best30Scenario
+from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
+from arcaea_offline_ocr.types import Mat
+
 from .colors import (
     BYD_MAX_HSV,
     BYD_MIN_HSV,
@@ -22,29 +28,20 @@ from .colors import (
     PURE_BG_MIN_HSV,
 )
 from .rois import ChieriBotV4Rois
-from ....providers.knn import OcrKNearestTextProvider
 
 
-class ChieriBotV4Ocr:
+class ChieriBotV4Best30Scenario(Best30Scenario):
     def __init__(
         self,
         score_knn_provider: OcrKNearestTextProvider,
         pfl_knn_provider: OcrKNearestTextProvider,
-        phash_db: ImagePhashDatabase,
+        image_id_provider: ImageIdProvider,
         factor: float = 1.0,
     ):
-        self.__phash_db = phash_db
         self.__rois = ChieriBotV4Rois(factor)
         self.pfl_knn_provider = pfl_knn_provider
         self.score_knn_provider = score_knn_provider
-
-    @property
-    def phash_db(self):
-        return self.__phash_db
-
-    @phash_db.setter
-    def phash_db(self, phash_db: ImagePhashDatabase):
-        self.__phash_db = phash_db
+        self.image_id_provider = image_id_provider
 
     @property
     def rois(self):
@@ -77,12 +74,12 @@ class ChieriBotV4Ocr:
         else:
             return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
 
-    def ocr_component_song_id(self, component_bgr: Mat):
+    def ocr_component_song_id_results(self, component_bgr: Mat):
         jacket_rect = self.rois.component_rois.jacket_rect.floored()
         jacket_roi = cv2.cvtColor(
             crop_xywh(component_bgr, jacket_rect), cv2.COLOR_BGR2GRAY
         )
-        return self.phash_db.lookup_jacket(jacket_roi)[0]
+        return self.image_id_provider.results(jacket_roi, ImageCategory.JACKET)
 
     def ocr_component_score_knn(self, component_bgr: Mat) -> int:
         # sourcery skip: inline-immediately-returned-variable
@@ -191,28 +188,36 @@ class ChieriBotV4Ocr:
         except Exception:
             return (None, None, None)
 
-    def ocr_component(self, component_bgr: Mat) -> B30OcrResultItem:
+    def ocr_component(self, component_bgr: Mat) -> OcrScenarioResult:
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)
         rating_class = self.ocr_component_rating_class(component_blur)
-        song_id = self.ocr_component_song_id(component_bgr)
-        # title = self.ocr_component_title(component_blur)
+        song_id_results = self.ocr_component_song_id_results(component_bgr)
         # score = self.ocr_component_score(component_blur)
         score = self.ocr_component_score_knn(component_bgr)
         pure, far, lost = self.ocr_component_pfl(component_bgr)
-        return B30OcrResultItem(
-            song_id=song_id,
+        return OcrScenarioResult(
+            song_id=song_id_results[0].image_id,
+            song_id_results=song_id_results,
             rating_class=rating_class,
-            # title=title,
             score=score,
             pure=pure,
             far=far,
             lost=lost,
-            date=None,
+            played_at=None,
         )
 
-    def ocr(self, img_bgr: Mat) -> List[B30OcrResultItem]:
-        self.set_factor(img_bgr)
-        return [
-            self.ocr_component(component_bgr)
-            for component_bgr in self.rois.components(img_bgr)
-        ]
+    def components(self, img: Mat, /):
+        """
+        :param img: BGR format image
+        """
+        self.set_factor(img)
+        return self.rois.components(img)
+
+    def result(self, component_img: Mat, /):
+        return self.ocr_component(component_img)
+
+    def results(self, img: Mat, /) -> List[OcrScenarioResult]:
+        """
+        :param img: BGR format image
+        """
+        return [self.ocr_component(component) for component in self.components(img)]
