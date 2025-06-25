@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
+dynamic = ["version"]
+
 name = "arcaea-offline-ocr"
-version = "0.0.99"
 authors = [{ name = "283375", email = "log_283375@163.com" }]
 description = "Extract your Arcaea play result from screenshot."
 readme = "README.md"
@@ -18,6 +19,8 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/ArcaeaOffline/core-ocr"
 "Bug Tracker" = "https://github.com/ArcaeaOffline/core-ocr/issues"
+
+[tool.setuptools_scm]
 
 [tool.isort]
 profile = "black"
@@ -34,5 +37,5 @@ generated-members = ["cv2.*"]
 disable = [
   "missing-module-docstring",
   "missing-class-docstring",
-  "missing-function-docstring"
+  "missing-function-docstring",
 ]
