@@ -1,26 +1,31 @@
 import cv2
 import numpy as np
 
-from ..phash_db import ImagePhashDatabase
-from ..providers.knn import OcrKNearestTextProvider
-from ..types import Mat
-from .common import DeviceOcrResult
-from .rois.extractor import DeviceRoisExtractor
-from .rois.masker import DeviceRoisMasker
+from arcaea_offline_ocr.providers import (
+    ImageCategory,
+    ImageIdProvider,
+    OcrKNearestTextProvider,
+)
+from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
+from arcaea_offline_ocr.types import Mat
+
+from .base import DeviceScenarioBase
+from .extractor import DeviceRoisExtractor
+from .masker import DeviceRoisMasker
 
 
-class DeviceOcr:
+class DeviceScenario(DeviceScenarioBase):
     def __init__(
         self,
         extractor: DeviceRoisExtractor,
         masker: DeviceRoisMasker,
         knn_provider: OcrKNearestTextProvider,
-        phash_db: ImagePhashDatabase,
+        image_id_provider: ImageIdProvider,
     ):
         self.extractor = extractor
         self.masker = masker
         self.knn_provider = knn_provider
-        self.phash_db = phash_db
+        self.image_id_provider = image_id_provider
 
     def pfl(self, roi_gray: Mat, factor: float = 1.25):
         def contour_filter(cnt):
@@ -93,13 +98,11 @@ class DeviceOcr:
         ]
         return max(enumerate(results), key=lambda i: np.count_nonzero(i[1]))[0]
 
-    def lookup_song_id(self):
-        return self.phash_db.lookup_jacket(
-            cv2.cvtColor(self.extractor.jacket, cv2.COLOR_BGR2GRAY)
+    def song_id_results(self):
+        return self.image_id_provider.results(
+            cv2.cvtColor(self.extractor.jacket, cv2.COLOR_BGR2GRAY),
+            ImageCategory.JACKET,
         )
-
-    def song_id(self):
-        return self.lookup_song_id()[0]
 
     @staticmethod
     def preprocess_char_icon(img_gray: Mat):
@@ -114,21 +117,19 @@ class DeviceOcr:
                 np.array([[0, h], [round(w / 2), h], [0, round(h / 2)]], np.int32),
                 np.array([[w, h], [round(w / 2), h], [w, round(h / 2)]], np.int32),
             ],
-            (128),
+            (128,),
         )
         return img
 
-    def lookup_partner_id(self):
-        return self.phash_db.lookup_partner_icon(
+    def partner_id_results(self):
+        return self.image_id_provider.results(
             self.preprocess_char_icon(
                 cv2.cvtColor(self.extractor.partner_icon, cv2.COLOR_BGR2GRAY)
-            )
+            ),
+            ImageCategory.PARTNER_ICON,
         )
 
-    def partner_id(self):
-        return self.lookup_partner_id()[0]
-
-    def ocr(self) -> DeviceOcrResult:
+    def result(self):
         rating_class = self.rating_class()
         pure = self.pure()
         far = self.far()
@@ -137,20 +138,18 @@ class DeviceOcr:
         max_recall = self.max_recall()
         clear_status = self.clear_status()
 
-        hash_len = self.phash_db.hash_size**2
-        song_id, song_id_distance = self.lookup_song_id()
-        partner_id, partner_id_distance = self.lookup_partner_id()
+        song_id_results = self.song_id_results()
+        partner_id_results = self.partner_id_results()
 
-        return DeviceOcrResult(
+        return OcrScenarioResult(
+            song_id=song_id_results[0].image_id,
+            song_id_results=song_id_results,
             rating_class=rating_class,
             pure=pure,
             far=far,
             lost=lost,
             score=score,
             max_recall=max_recall,
-            song_id=song_id,
-            song_id_possibility=1 - song_id_distance / hash_len,
+            partner_id_results=partner_id_results,
             clear_status=clear_status,
-            partner_id=partner_id,
-            partner_id_possibility=1 - partner_id_distance / hash_len,
         )

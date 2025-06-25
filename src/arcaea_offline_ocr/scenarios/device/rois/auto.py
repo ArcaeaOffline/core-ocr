@@ -1,6 +1,6 @@
-from .common import DeviceRois
+from arcaea_offline_ocr.types import XYWHRect
 
-__all__ = ["DeviceRoisAuto", "DeviceRoisAutoT1", "DeviceRoisAutoT2"]
+from .base import DeviceRois
 
 
 class DeviceRoisAuto(DeviceRois):
@@ -50,7 +50,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
 
     @property
     def pure(self):
-        return (
+        return XYWHRect(
             self.pfl_x,
             self.layout_area_h_mid + 110 * self.factor,
             self.pfl_w,
@@ -59,7 +59,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
 
     @property
     def far(self):
-        return (
+        return XYWHRect(
             self.pfl_x,
             self.pure[1] + self.pure[3] + 12 * self.factor,
             self.pfl_w,
@@ -68,7 +68,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
 
     @property
     def lost(self):
-        return (
+        return XYWHRect(
             self.pfl_x,
             self.far[1] + self.far[3] + 10 * self.factor,
             self.pfl_w,
@@ -79,7 +79,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
     def score(self):
         w = 280 * self.factor
         h = 45 * self.factor
-        return (
+        return XYWHRect(
             self.w_mid - w / 2,
             self.layout_area_h_mid - 75 * self.factor - h,
             w,
@@ -88,7 +88,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
 
     @property
     def rating_class(self):
-        return (
+        return XYWHRect(
             self.w_mid - 610 * self.factor,
             self.layout_area_h_mid - 180 * self.factor,
             265 * self.factor,
@@ -97,7 +97,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
 
     @property
     def max_recall(self):
-        return (
+        return XYWHRect(
             self.w_mid - 465 * self.factor,
             self.layout_area_h_mid - 215 * self.factor,
             150 * self.factor,
@@ -106,7 +106,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
 
     @property
     def jacket(self):
-        return (
+        return XYWHRect(
             self.w_mid - 610 * self.factor,
             self.layout_area_h_mid - 143 * self.factor,
             375 * self.factor,
@@ -117,7 +117,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
     def clear_status(self):
         w = 550 * self.factor
         h = 60 * self.factor
-        return (
+        return XYWHRect(
             self.w_mid - w / 2,
             self.layout_area_h_mid - 155 * self.factor - h,
             w * 0.4,
@@ -128,7 +128,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
     def partner_icon(self):
         w = 90 * self.factor
         h = 75 * self.factor
-        return (self.w_mid - w / 2, 0, w, h)
+        return XYWHRect(self.w_mid - w / 2, 0, w, h)
 
 
 class DeviceRoisAutoT2(DeviceRoisAuto):
@@ -174,7 +174,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
 
     @property
     def pure(self):
-        return (
+        return XYWHRect(
             self.pfl_x,
             self.layout_area_h_mid + 175 * self.factor,
             self.pfl_w,
@@ -183,7 +183,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
 
     @property
     def far(self):
-        return (
+        return XYWHRect(
             self.pfl_x,
             self.pure[1] + self.pure[3] + 30 * self.factor,
             self.pfl_w,
@@ -192,7 +192,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
 
     @property
     def lost(self):
-        return (
+        return XYWHRect(
             self.pfl_x,
             self.far[1] + self.far[3] + 35 * self.factor,
             self.pfl_w,
@@ -203,7 +203,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
     def score(self):
         w = 420 * self.factor
         h = 70 * self.factor
-        return (
+        return XYWHRect(
             self.w_mid - w / 2,
             self.layout_area_h_mid - 110 * self.factor - h,
             w,
@@ -212,7 +212,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
 
     @property
     def rating_class(self):
-        return (
+        return XYWHRect(
             max(0, self.w_mid - 965 * self.factor),
             self.layout_area_h_mid - 330 * self.factor,
             350 * self.factor,
@@ -221,7 +221,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
 
     @property
     def max_recall(self):
-        return (
+        return XYWHRect(
             self.w_mid - 625 * self.factor,
             self.layout_area_h_mid - 275 * self.factor,
             150 * self.factor,
@@ -230,7 +230,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
 
     @property
     def jacket(self):
-        return (
+        return XYWHRect(
             self.w_mid - 915 * self.factor,
             self.layout_area_h_mid - 215 * self.factor,
             565 * self.factor,
@@ -241,7 +241,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
     def clear_status(self):
         w = 825 * self.factor
         h = 90 * self.factor
-        return (
+        return XYWHRect(
             self.w_mid - w / 2,
             self.layout_area_h_mid - 235 * self.factor - h,
             w * 0.4,
@@ -252,4 +252,4 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
     def partner_icon(self):
         w = 135 * self.factor
         h = 110 * self.factor
-        return (self.w_mid - w / 2, 0, w, h)
+        return XYWHRect(self.w_mid - w / 2, 0, w, h)
