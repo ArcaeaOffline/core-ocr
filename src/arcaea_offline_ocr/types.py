@@ -34,3 +34,9 @@ class XYWHRect(NamedTuple):
             raise TypeError()
 
         return self.__class__(*[a - b for a, b in zip(self, other)])
+
+    def __mul__(self, other):
+        if not isinstance(other, (int, float)):
+            raise TypeError()
+
+        return self.__class__(*[v * other for v in self])
