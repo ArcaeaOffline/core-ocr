@@ -1,4 +1,6 @@
-from typing import List, Optional, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
@@ -11,7 +13,9 @@ from arcaea_offline_ocr.providers import (
 )
 from arcaea_offline_ocr.scenarios.b30.base import Best30Scenario
 from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
-from arcaea_offline_ocr.types import Mat
+
+if TYPE_CHECKING:
+    from arcaea_offline_ocr.types import Mat
 
 from .colors import (
     BYD_MAX_HSV,
@@ -71,13 +75,13 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         rating_class_results = [np.count_nonzero(m) for m in rating_class_masks]
         if max(rating_class_results) < 70:
             return 0
-        else:
-            return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
+        return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
 
     def ocr_component_song_id_results(self, component_bgr: Mat):
         jacket_rect = self.rois.component_rois.jacket_rect.floored()
         jacket_roi = cv2.cvtColor(
-            crop_xywh(component_bgr, jacket_rect), cv2.COLOR_BGR2GRAY
+            crop_xywh(component_bgr, jacket_rect),
+            cv2.COLOR_BGR2GRAY,
         )
         return self.image_id_provider.results(jacket_roi, ImageCategory.JACKET)
 
@@ -85,16 +89,22 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         # sourcery skip: inline-immediately-returned-variable
         score_rect = self.rois.component_rois.score_rect.rounded()
         score_roi = cv2.cvtColor(
-            crop_xywh(component_bgr, score_rect), cv2.COLOR_BGR2GRAY
+            crop_xywh(component_bgr, score_rect),
+            cv2.COLOR_BGR2GRAY,
         )
         _, score_roi = cv2.threshold(
-            score_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+            score_roi,
+            0,
+            255,
+            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
         )
         if score_roi[1][1] == 255:
             score_roi = 255 - score_roi
 
         contours, _ = cv2.findContours(
-            score_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            score_roi,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
         )
         for contour in contours:
             rect = cv2.boundingRect(contour)
@@ -106,8 +116,9 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         return int(ocr_result) if ocr_result else 0
 
     def find_pfl_rects(
-        self, component_pfl_processed: Mat
-    ) -> List[Tuple[int, int, int, int]]:
+        self,
+        component_pfl_processed: Mat,
+    ) -> list[tuple[int, int, int, int]]:
         # sourcery skip: inline-immediately-returned-variable
         pfl_roi_find = cv2.morphologyEx(
             component_pfl_processed,
@@ -115,14 +126,16 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             cv2.getStructuringElement(cv2.MORPH_RECT, [10, 1]),
         )
         pfl_contours, _ = cv2.findContours(
-            pfl_roi_find, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+            pfl_roi_find,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_NONE,
         )
         pfl_rects = [cv2.boundingRect(c) for c in pfl_contours]
         pfl_rects = [
             r for r in pfl_rects if r[3] > component_pfl_processed.shape[0] * 0.1
         ]
         pfl_rects = sorted(pfl_rects, key=lambda r: r[1])
-        pfl_rects_adjusted = [
+        return [
             (
                 max(rect[0] - 2, 0),
                 rect[1],
@@ -131,7 +144,6 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             )
             for rect in pfl_rects
         ]
-        return pfl_rects_adjusted
 
     def preprocess_component_pfl(self, component_bgr: Mat) -> Mat:
         pfl_rect = self.rois.component_rois.pfl_rect.rounded()
@@ -154,11 +166,17 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         pfl_roi_blurred = cv2.GaussianBlur(pfl_roi, (5, 5), 0)
         # pfl_roi_blurred = cv2.medianBlur(pfl_roi, 3)
         _, pfl_roi_blurred_threshold = cv2.threshold(
-            pfl_roi_blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+            pfl_roi_blurred,
+            0,
+            255,
+            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
         )
         # and a threshold of the original roi
         _, pfl_roi_threshold = cv2.threshold(
-            pfl_roi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+            pfl_roi,
+            0,
+            255,
+            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
         )
         # turn thresholds into black background
         if pfl_roi_blurred_threshold[2][2] == 255:
@@ -168,13 +186,15 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         # return a bitwise_and result
         result = cv2.bitwise_and(pfl_roi_blurred_threshold, pfl_roi_threshold)
         result_eroded = cv2.erode(
-            result, cv2.getStructuringElement(cv2.MORPH_CROSS, (2, 2))
+            result,
+            cv2.getStructuringElement(cv2.MORPH_CROSS, (2, 2)),
         )
         return result_eroded if len(self.find_pfl_rects(result_eroded)) == 3 else result
 
     def ocr_component_pfl(
-        self, component_bgr: Mat
-    ) -> Tuple[Optional[int], Optional[int], Optional[int]]:
+        self,
+        component_bgr: Mat,
+    ) -> tuple[int | None, int | None, int | None]:
         try:
             pfl_roi = self.preprocess_component_pfl(component_bgr)
             pfl_rects = self.find_pfl_rects(pfl_roi)
@@ -185,7 +205,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
                 pure_far_lost.append(int(result) if result else None)
 
             return tuple(pure_far_lost)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return (None, None, None)
 
     def ocr_component(self, component_bgr: Mat) -> OcrScenarioResult:
@@ -216,7 +236,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
     def result(self, component_img: Mat, /):
         return self.ocr_component(component_img)
 
-    def results(self, img: Mat, /) -> List[OcrScenarioResult]:
+    def results(self, img: Mat, /) -> list[OcrScenarioResult]:
         """
         :param img: BGR format image
         """

@@ -10,7 +10,9 @@ class DeviceRoisMaskerAuto(DeviceRoisMasker):
     @staticmethod
     def mask_bgr_in_hsv(roi_bgr: Mat, hsv_lower: Mat, hsv_upper: Mat):
         return cv2.inRange(
-            cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV), hsv_lower, hsv_upper
+            cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV),
+            hsv_lower,
+            hsv_upper,
         )
 
 
@@ -100,25 +102,33 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
     @classmethod
     def clear_status_track_lost(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.TRACK_LOST_HSV_MIN, cls.TRACK_LOST_HSV_MAX
+            roi_bgr,
+            cls.TRACK_LOST_HSV_MIN,
+            cls.TRACK_LOST_HSV_MAX,
         )
 
     @classmethod
     def clear_status_track_complete(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.TRACK_COMPLETE_HSV_MIN, cls.TRACK_COMPLETE_HSV_MAX
+            roi_bgr,
+            cls.TRACK_COMPLETE_HSV_MIN,
+            cls.TRACK_COMPLETE_HSV_MAX,
         )
 
     @classmethod
     def clear_status_full_recall(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.FULL_RECALL_HSV_MIN, cls.FULL_RECALL_HSV_MAX
+            roi_bgr,
+            cls.FULL_RECALL_HSV_MIN,
+            cls.FULL_RECALL_HSV_MAX,
         )
 
     @classmethod
     def clear_status_pure_memory(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.PURE_MEMORY_HSV_MIN, cls.PURE_MEMORY_HSV_MAX
+            roi_bgr,
+            cls.PURE_MEMORY_HSV_MIN,
+            cls.PURE_MEMORY_HSV_MAX,
         )
 
 
@@ -202,29 +212,39 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
     @classmethod
     def max_recall(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.MAX_RECALL_HSV_MIN, cls.MAX_RECALL_HSV_MAX
+            roi_bgr,
+            cls.MAX_RECALL_HSV_MIN,
+            cls.MAX_RECALL_HSV_MAX,
         )
 
     @classmethod
     def clear_status_track_lost(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.TRACK_LOST_HSV_MIN, cls.TRACK_LOST_HSV_MAX
+            roi_bgr,
+            cls.TRACK_LOST_HSV_MIN,
+            cls.TRACK_LOST_HSV_MAX,
         )
 
     @classmethod
     def clear_status_track_complete(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.TRACK_COMPLETE_HSV_MIN, cls.TRACK_COMPLETE_HSV_MAX
+            roi_bgr,
+            cls.TRACK_COMPLETE_HSV_MIN,
+            cls.TRACK_COMPLETE_HSV_MAX,
         )
 
     @classmethod
     def clear_status_full_recall(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.FULL_RECALL_HSV_MIN, cls.FULL_RECALL_HSV_MAX
+            roi_bgr,
+            cls.FULL_RECALL_HSV_MIN,
+            cls.FULL_RECALL_HSV_MAX,
         )
 
     @classmethod
     def clear_status_pure_memory(cls, roi_bgr: Mat) -> Mat:
         return cls.mask_bgr_in_hsv(
-            roi_bgr, cls.PURE_MEMORY_HSV_MIN, cls.PURE_MEMORY_HSV_MAX
+            roi_bgr,
+            cls.PURE_MEMORY_HSV_MIN,
+            cls.PURE_MEMORY_HSV_MAX,
         )

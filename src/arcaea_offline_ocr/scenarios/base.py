@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from abc import ABC
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Sequence, Optional
+from typing import TYPE_CHECKING, Sequence
 
-from arcaea_offline_ocr.providers import ImageIdProviderResult
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from arcaea_offline_ocr.providers import ImageIdProviderResult
 
 
 @dataclass(kw_only=True)
@@ -12,27 +16,27 @@ class OcrScenarioResult:
     rating_class: int
     score: int
 
-    song_id_results: Sequence[ImageIdProviderResult] = field(default_factory=lambda: [])
+    song_id_results: Sequence[ImageIdProviderResult] = field(default_factory=list)
     partner_id_results: Sequence[ImageIdProviderResult] = field(
-        default_factory=lambda: []
+        default_factory=list,
     )
 
-    pure: Optional[int] = None
-    pure_inaccurate: Optional[int] = None
-    pure_early: Optional[int] = None
-    pure_late: Optional[int] = None
-    far: Optional[int] = None
-    far_inaccurate: Optional[int] = None
-    far_early: Optional[int] = None
-    far_late: Optional[int] = None
-    lost: Optional[int] = None
+    pure: int | None = None
+    pure_inaccurate: int | None = None
+    pure_early: int | None = None
+    pure_late: int | None = None
+    far: int | None = None
+    far_inaccurate: int | None = None
+    far_early: int | None = None
+    far_late: int | None = None
+    lost: int | None = None
 
-    played_at: Optional[datetime] = None
-    max_recall: Optional[int] = None
-    clear_status: Optional[int] = None
-    clear_type: Optional[int] = None
-    modifier: Optional[int] = None
+    played_at: datetime | None = None
+    max_recall: int | None = None
+    clear_status: int | None = None
+    clear_type: int | None = None
+    modifier: int | None = None
 
 
-class OcrScenario(ABC):
+class OcrScenario(ABC):  # noqa: B024
     pass

@@ -1,7 +1,6 @@
 from arcaea_offline_ocr.crop import crop_xywh
+from arcaea_offline_ocr.scenarios.device.rois import DeviceRois
 from arcaea_offline_ocr.types import Mat
-
-from ..rois.base import DeviceRois
 
 
 class DeviceRoisExtractor:

@@ -1,19 +1,19 @@
 import numpy as np
 
 __all__ = [
-    "FONT_THRESHOLD",
-    "PURE_BG_MIN_HSV",
-    "PURE_BG_MAX_HSV",
-    "FAR_BG_MIN_HSV",
-    "FAR_BG_MAX_HSV",
-    "LOST_BG_MIN_HSV",
-    "LOST_BG_MAX_HSV",
-    "BYD_MIN_HSV",
     "BYD_MAX_HSV",
-    "FTR_MIN_HSV",
+    "BYD_MIN_HSV",
+    "FAR_BG_MAX_HSV",
+    "FAR_BG_MIN_HSV",
+    "FONT_THRESHOLD",
     "FTR_MAX_HSV",
-    "PRS_MIN_HSV",
+    "FTR_MIN_HSV",
+    "LOST_BG_MAX_HSV",
+    "LOST_BG_MIN_HSV",
     "PRS_MAX_HSV",
+    "PRS_MIN_HSV",
+    "PURE_BG_MAX_HSV",
+    "PURE_BG_MIN_HSV",
 ]
 
 FONT_THRESHOLD = 160

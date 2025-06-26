@@ -23,7 +23,7 @@ def difference(img_gray: Mat, hash_size: int) -> Mat:
 
 
 def dct(img_gray: Mat, hash_size: int = 16, high_freq_factor: int = 4) -> Mat:
-    # TODO: consistency?
+    # TODO: consistency?  # noqa: FIX002, TD002, TD003
     img_size_base = hash_size * high_freq_factor
     img_size = (img_size_base, img_size_base)
 

@@ -25,18 +25,18 @@ class XYWHRect(NamedTuple):
 
     def __add__(self, other):
         if not isinstance(other, (list, tuple)) or len(other) != 4:
-            raise TypeError()
+            raise TypeError
 
         return self.__class__(*[a + b for a, b in zip(self, other)])
 
     def __sub__(self, other):
         if not isinstance(other, (list, tuple)) or len(other) != 4:
-            raise TypeError()
+            raise TypeError
 
         return self.__class__(*[a - b for a, b in zip(self, other)])
 
     def __mul__(self, other):
         if not isinstance(other, (int, float)):
-            raise TypeError()
+            raise TypeError
 
         return self.__class__(*[v * other for v in self])

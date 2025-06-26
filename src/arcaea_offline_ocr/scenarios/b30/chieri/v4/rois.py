@@ -1,4 +1,4 @@
-from typing import List
+from __future__ import annotations
 
 from arcaea_offline_ocr.crop import crop_xywh
 from arcaea_offline_ocr.types import Mat, XYWHRect
@@ -105,7 +105,7 @@ class ChieriBotV4Rois:
     def b33_vertical_gap(self):
         return 121 * self.factor
 
-    def components(self, img_bgr: Mat) -> List[Mat]:
+    def components(self, img_bgr: Mat) -> list[Mat]:
         first_rect = XYWHRect(x=self.left, y=self.top, w=self.width, h=self.height)
         results = []
 

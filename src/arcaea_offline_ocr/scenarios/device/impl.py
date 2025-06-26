@@ -33,7 +33,8 @@ class DeviceScenario(DeviceScenarioBase):
 
         contours = self.knn_provider.contours(roi_gray)
         contours_filtered = self.knn_provider.contours(
-            roi_gray, contours_filter=contour_filter
+            roi_gray,
+            contours_filter=contour_filter,
         )
 
         roi_ocr = roi_gray.copy()
@@ -84,7 +85,7 @@ class DeviceScenario(DeviceScenarioBase):
 
     def max_recall(self):
         ocr_result = self.knn_provider.result(
-            self.masker.max_recall(self.extractor.max_recall)
+            self.masker.max_recall(self.extractor.max_recall),
         )
         return int(ocr_result) if ocr_result else None
 
@@ -109,7 +110,7 @@ class DeviceScenario(DeviceScenarioBase):
         h, w = img_gray.shape[:2]
         img = cv2.copyMakeBorder(img_gray, max(w - h, 0), 0, 0, 0, cv2.BORDER_REPLICATE)
         h, w = img.shape[:2]
-        img = cv2.fillPoly(
+        return cv2.fillPoly(
             img,
             [
                 np.array([[0, 0], [round(w / 2), 0], [0, round(h / 2)]], np.int32),
@@ -119,12 +120,11 @@ class DeviceScenario(DeviceScenarioBase):
             ],
             (128,),
         )
-        return img
 
     def partner_id_results(self):
         return self.image_id_provider.results(
             self.preprocess_char_icon(
-                cv2.cvtColor(self.extractor.partner_icon, cv2.COLOR_BGR2GRAY)
+                cv2.cvtColor(self.extractor.partner_icon, cv2.COLOR_BGR2GRAY),
             ),
             ImageCategory.PARTNER_ICON,
         )

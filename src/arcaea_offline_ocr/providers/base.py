@@ -1,17 +1,19 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, Sequence, Optional
+from typing import TYPE_CHECKING, Any, Sequence
 
 if TYPE_CHECKING:
-    from ..types import Mat
+    from arcaea_offline_ocr.types import Mat
 
 
 class OcrTextProvider(ABC):
     @abstractmethod
-    def result_raw(self, img: "Mat", /, *args, **kwargs) -> Any: ...
+    def result_raw(self, img: Mat, /, *args, **kwargs) -> Any: ...
     @abstractmethod
-    def result(self, img: "Mat", /, *args, **kwargs) -> Optional[str]: ...
+    def result(self, img: Mat, /, *args, **kwargs) -> str | None: ...
 
 
 class ImageCategory(IntEnum):
@@ -29,10 +31,20 @@ class ImageIdProviderResult:
 class ImageIdProvider(ABC):
     @abstractmethod
     def result(
-        self, img: "Mat", category: ImageCategory, /, *args, **kwargs
+        self,
+        img: Mat,
+        category: ImageCategory,
+        /,
+        *args,
+        **kwargs,
     ) -> ImageIdProviderResult: ...
 
     @abstractmethod
     def results(
-        self, img: "Mat", category: ImageCategory, /, *args, **kwargs
+        self,
+        img: Mat,
+        category: ImageCategory,
+        /,
+        *args,
+        **kwargs,
     ) -> Sequence[ImageIdProviderResult]: ...

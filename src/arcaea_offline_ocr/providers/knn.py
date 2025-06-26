@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 import logging
 import math
-from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Callable, Sequence
 
 import cv2
 import numpy as np
 
-from ..crop import crop_xywh
+from arcaea_offline_ocr.crop import crop_xywh
+
 from .base import OcrTextProvider
 
 if TYPE_CHECKING:
     from cv2.ml import KNearest
 
-    from ..types import Mat
+    from arcaea_offline_ocr.types import Mat
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +22,10 @@ logger = logging.getLogger(__name__)
 class FixRects:
     @staticmethod
     def connect_broken(
-        rects: Sequence[Tuple[int, int, int, int]],
+        rects: Sequence[tuple[int, int, int, int]],
         img_width: int,
         img_height: int,
-        tolerance: Optional[int] = None,
+        tolerance: int | None = None,
     ):
         # for a "broken" digit, please refer to
         # /assets/fix_rects/broken_masked.jpg
@@ -69,8 +72,8 @@ class FixRects:
 
     @staticmethod
     def split_connected(
-        img_masked: "Mat",
-        rects: Sequence[Tuple[int, int, int, int]],
+        img_masked: Mat,
+        rects: Sequence[tuple[int, int, int, int]],
         rect_wh_ratio: float = 1.05,
         width_range_ratio: float = 0.1,
     ):
@@ -111,7 +114,7 @@ class FixRects:
 
             # split the rect
             new_rects.extend(
-                [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)]
+                [(rx, ry, x_mid - rx, rh), (x_mid, ry, rx + rw - x_mid, rh)],
             )
 
         return_rects = [r for r in rects if r not in connected_rects]
@@ -119,7 +122,7 @@ class FixRects:
         return return_rects
 
 
-def resize_fill_square(img: "Mat", target: int = 20):
+def resize_fill_square(img: Mat, target: int = 20):
     h, w = img.shape[:2]
     if h > w:
         new_h = target
@@ -132,11 +135,21 @@ def resize_fill_square(img: "Mat", target: int = 20):
     border_size = math.ceil((max(new_w, new_h) - min(new_w, new_h)) / 2)
     if new_w < new_h:
         resized = cv2.copyMakeBorder(
-            resized, 0, 0, border_size, border_size, cv2.BORDER_CONSTANT
+            resized,
+            0,
+            0,
+            border_size,
+            border_size,
+            cv2.BORDER_CONSTANT,
         )
     else:
         resized = cv2.copyMakeBorder(
-            resized, border_size, border_size, 0, 0, cv2.BORDER_CONSTANT
+            resized,
+            border_size,
+            border_size,
+            0,
+            0,
+            cv2.BORDER_CONSTANT,
         )
     return cv2.resize(resized, (target, target))
 
@@ -151,8 +164,8 @@ def preprocess_hog(digit_rois):
     return np.float32(samples)
 
 
-def ocr_digit_samples_knn(__samples, knn_model: cv2.ml.KNearest, k: int = 4):
-    _, results, _, _ = knn_model.findNearest(__samples, k)
+def ocr_digit_samples_knn(samples, knn_model: cv2.ml.KNearest, k: int = 4):
+    _, results, _, _ = knn_model.findNearest(samples, k)
     return [int(r) for r in results.ravel()]
 
 
@@ -160,11 +173,15 @@ class OcrKNearestTextProvider(OcrTextProvider):
     _ContourFilter = Callable[["Mat"], bool]
     _RectsFilter = Callable[[Sequence[int]], bool]
 
-    def __init__(self, model: "KNearest"):
+    def __init__(self, model: KNearest):
         self.model = model
 
     def contours(
-        self, img: "Mat", /, *, contours_filter: Optional[_ContourFilter] = None
+        self,
+        img: Mat,
+        /,
+        *,
+        contours_filter: _ContourFilter | None = None,
     ):
         cnts, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         if contours_filter:
@@ -174,12 +191,12 @@ class OcrKNearestTextProvider(OcrTextProvider):
 
     def result_raw(
         self,
-        img: "Mat",
+        img: Mat,
         /,
         *,
         fix_rects: bool = True,
-        contours_filter: Optional[_ContourFilter] = None,
-        rects_filter: Optional[_RectsFilter] = None,
+        contours_filter: _ContourFilter | None = None,
+        rects_filter: _RectsFilter | None = None,
     ):
         """
         :param img: grayscaled roi
@@ -192,11 +209,11 @@ class OcrKNearestTextProvider(OcrTextProvider):
 
             rects = [cv2.boundingRect(cnt) for cnt in cnts]
             if fix_rects and rects_filter:
-                rects = FixRects.connect_broken(rects, img.shape[1], img.shape[0])  # type: ignore
+                rects = FixRects.connect_broken(rects, img.shape[1], img.shape[0])
                 rects = list(filter(rects_filter, rects))
                 rects = FixRects.split_connected(img, rects)
             elif fix_rects:
-                rects = FixRects.connect_broken(rects, img.shape[1], img.shape[0])  # type: ignore
+                rects = FixRects.connect_broken(rects, img.shape[1], img.shape[0])
                 rects = FixRects.split_connected(img, rects)
             elif rects_filter:
                 rects = list(filter(rects_filter, rects))
@@ -216,12 +233,12 @@ class OcrKNearestTextProvider(OcrTextProvider):
 
     def result(
         self,
-        img: "Mat",
+        img: Mat,
         /,
         *,
         fix_rects: bool = True,
-        contours_filter: Optional[_ContourFilter] = None,
-        rects_filter: Optional[_RectsFilter] = None,
+        contours_filter: _ContourFilter | None = None,
+        rects_filter: _RectsFilter | None = None,
     ):
         """
         :param img: grayscaled roi

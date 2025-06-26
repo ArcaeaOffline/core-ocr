@@ -5,8 +5,8 @@ from .knn import OcrKNearestTextProvider
 __all__ = [
     "ImageCategory",
     "ImageHashDatabaseIdProvider",
-    "OcrKNearestTextProvider",
     "ImageIdProvider",
-    "OcrTextProvider",
     "ImageIdProviderResult",
+    "OcrKNearestTextProvider",
+    "OcrTextProvider",
 ]
