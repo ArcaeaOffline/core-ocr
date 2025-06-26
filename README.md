@@ -4,31 +4,149 @@
 
 ## Example
 
+> Results from `arcaea_offline_ocr 0.1.0a2`
+
+### Build an image hash database (ihdb)
+
 ```py
+import sqlite3
+from pathlib import Path
+
 import cv2
-from arcaea_offline_ocr.device.ocr import DeviceOcr
-from arcaea_offline_ocr.device.rois.definition import DeviceRoisAutoT2
-from arcaea_offline_ocr.device.rois.extractor import DeviceRoisExtractor
-from arcaea_offline_ocr.device.rois.masker import DeviceRoisMaskerAutoT2
-from arcaea_offline_ocr.phash_db import ImagePhashDatabase
 
-img_path = "/path/to/opencv/supported/image/formats.jpg"
-img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+from arcaea_offline_ocr.builders.ihdb import (
+    ImageHashDatabaseBuildTask,
+    ImageHashesDatabaseBuilder,
+)
+from arcaea_offline_ocr.providers import ImageCategory, ImageHashDatabaseIdProvider
+from arcaea_offline_ocr.scenarios.device import DeviceScenario
 
-rois = DeviceRoisAutoT2(img.shape[1], img.shape[0])
-extractor = DeviceRoisExtractor(img, rois)
-masker = DeviceRoisMaskerAutoT2()
+def build():
+    def _read_partner_icon(image_path: str):
+        return DeviceScenario.preprocess_char_icon(
+            cv2.cvtColor(cv2.imread(image_path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2GRAY),
+        )
 
-knn_model = cv2.ml.KNearest.load("/path/to/trained/knn/model.dat")
-phash_db = ImagePhashDatabase("/path/to/image/phash/database.db")
+    builder = ImageHashesDatabaseBuilder()
+    tasks = [
+        ImageHashDatabaseBuildTask(
+            image_path=str(file),
+            image_id=file.stem,
+            category=ImageCategory.JACKET,
+        )
+        for file in Path("/path/to/some/jackets").glob("*.jpg")
+    ]
 
-ocr = DeviceOcr(extractor, masker, knn_model, phash_db)
-print(ocr.ocr())
+    tasks.extend(
+        [
+            ImageHashDatabaseBuildTask(
+                image_path=str(file),
+                image_id=file.stem,
+                category=ImageCategory.PARTNER_ICON,
+                imread_function=_read_partner_icon,
+            )
+            for file in Path("/path/to/some/partner_icons").glob("*.png")
+        ],
+    )
+
+    with sqlite3.connect("/path/to/ihdb-X.Y.Z.db") as conn:
+        builder.build(conn, tasks)
 ```
 
-```sh
-$ python example.py
-DeviceOcrResult(rating_class=2, pure=1135, far=11, lost=0, score=9953016, max_recall=1146, song_id='ringedgenesis', song_id_possibility=0.953125, clear_status=2, partner_id='45', partner_id_possibility=0.8046875)
+### Device OCR
+
+```py
+import json
+import sqlite3
+from dataclasses import asdict
+
+import cv2
+
+from arcaea_offline_ocr.providers import (
+    ImageHashDatabaseIdProvider,
+    OcrKNearestTextProvider,
+)
+from arcaea_offline_ocr.scenarios.device import (
+    DeviceRoisAutoT2,
+    DeviceRoisExtractor,
+    DeviceRoisMaskerAutoT2,
+    DeviceScenario,
+)
+
+
+with sqlite3.connect("/path/to/ihdb-X.Y.Z.db") as conn:
+    img = cv2.imread("/path/to/your/screenshot.jpg")
+    h, w = img.shape[:2]
+
+    r = DeviceRoisAutoT2(w, h)
+    m = DeviceRoisMaskerAutoT2()
+    e = DeviceRoisExtractor(img, r)
+
+    scenario = DeviceScenario(
+        extractor=e,
+        masker=m,
+        knn_provider=OcrKNearestTextProvider(
+            cv2.ml.KNearest.load("/path/to/knn_model.dat"),
+        ),
+        image_id_provider=ImageHashDatabaseIdProvider(conn),
+    )
+    result = scenario.result()
+
+    with open("result.jsonc", "w", encoding="utf-8") as jf:
+        json.dump(asdict(result), jf, indent=2, ensure_ascii=False)
+```
+
+```jsonc
+// result.json
+{
+  "song_id": "vector",
+  "rating_class": 1,
+  "score": 9990996,
+  "song_id_results": [
+    {
+      "image_id": "vector",
+      "category": 0,
+      "confidence": 1.0,
+      "image_hash_type": 0
+    },
+    {
+      "image_id": "clotho",
+      "category": 0,
+      "confidence": 0.71875,
+      "image_hash_type": 0
+    }
+    // 28 more results omitted…
+  ],
+  "partner_id_results": [
+    {
+      "image_id": "23",
+      "category": 1,
+      "confidence": 0.90625,
+      "image_hash_type": 0
+    },
+    {
+      "image_id": "45",
+      "category": 1,
+      "confidence": 0.8828125,
+      "image_hash_type": 0
+    }
+    // 28 more results omitted…
+  ],
+  "pure": 1000,
+  "pure_inaccurate": null,
+  "pure_early": null,
+  "pure_late": null,
+  "far": 2,
+  "far_inaccurate": null,
+  "far_early": null,
+  "far_late": null,
+  "lost": 0,
+  "played_at": null,
+  "max_recall": 1002,
+  "clear_status": 2,
+  "clear_type": null,
+  "modifier": null
+}
 ```
 
 ## License
@@ -50,4 +168,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Credits
 
-[283375/image-phash-database](https://github.com/283375/image-phash-database)
+- [JohannesBuchner/imagehash](https://github.com/JohannesBuchner/imagehash): `arcaea_offline_ocr.core.hashers` implementations reference
