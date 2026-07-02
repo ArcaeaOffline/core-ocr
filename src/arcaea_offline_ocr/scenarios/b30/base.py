@@ -15,7 +15,11 @@ class Best30Scenario(OcrScenario):
 
     @abstractmethod
     def result(
-        self, component_img: MatLike, /, *args, **kwargs
+        self,
+        component_img: MatLike,
+        /,
+        *args,
+        **kwargs,
     ) -> OcrScenarioResult: ...
 
     @abstractmethod

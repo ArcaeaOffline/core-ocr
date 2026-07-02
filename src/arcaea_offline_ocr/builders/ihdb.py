@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Callable
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import cv2
 
@@ -16,6 +16,7 @@ from arcaea_offline_ocr.providers.ihdb import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from sqlite3 import Connection
 
     from arcaea_offline_ocr.providers import ImageCategory
@@ -96,7 +97,7 @@ class ImageHashesDatabaseBuilder:
 )""",
         )
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         timestamp = int(now.timestamp() * 1000)
 
         cls.__insert_property(conn, PROP_KEY_HASH_SIZE, str(hash_size))

@@ -28,4 +28,10 @@ ignore = ["**/__debug*.*"]
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["ANN", "D", "ERA", "PLR"]
+ignore = [
+  "ANN",
+  "D",
+  "ERA",
+  "PLR",
+  "COM812", # formatter compatibility
+]

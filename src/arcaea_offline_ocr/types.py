@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from math import floor
-from typing import Callable, NamedTuple, Union
+from typing import NamedTuple
 
-_IntOrFloat = Union[int, float]
+_IntOrFloat = int | float
 
 
 class XYWHRect(NamedTuple):
@@ -23,13 +24,13 @@ class XYWHRect(NamedTuple):
         if not isinstance(other, (list, tuple)) or len(other) != 4:
             raise TypeError
 
-        return self.__class__(*[a + b for a, b in zip(self, other)])
+        return self.__class__(*[a + b for a, b in zip(self, other, strict=False)])
 
     def __sub__(self, other):
         if not isinstance(other, (list, tuple)) or len(other) != 4:
             raise TypeError
 
-        return self.__class__(*[a - b for a, b in zip(self, other)])
+        return self.__class__(*[a - b for a, b in zip(self, other, strict=False)])
 
     def __mul__(self, other):
         if not isinstance(other, (int, float)):

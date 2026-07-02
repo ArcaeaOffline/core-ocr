@@ -111,7 +111,8 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
 
     @classmethod
     def clear_status_track_complete(
-        cls, roi_bgr: cv2.typing.MatLike
+        cls,
+        roi_bgr: cv2.typing.MatLike,
     ) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -121,7 +122,8 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
 
     @classmethod
     def clear_status_full_recall(
-        cls, roi_bgr: cv2.typing.MatLike
+        cls,
+        roi_bgr: cv2.typing.MatLike,
     ) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -131,7 +133,8 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
 
     @classmethod
     def clear_status_pure_memory(
-        cls, roi_bgr: cv2.typing.MatLike
+        cls,
+        roi_bgr: cv2.typing.MatLike,
     ) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -235,7 +238,8 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
 
     @classmethod
     def clear_status_track_complete(
-        cls, roi_bgr: cv2.typing.MatLike
+        cls,
+        roi_bgr: cv2.typing.MatLike,
     ) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -245,7 +249,8 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
 
     @classmethod
     def clear_status_full_recall(
-        cls, roi_bgr: cv2.typing.MatLike
+        cls,
+        roi_bgr: cv2.typing.MatLike,
     ) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -255,7 +260,8 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
 
     @classmethod
     def clear_status_pure_memory(
-        cls, roi_bgr: cv2.typing.MatLike
+        cls,
+        roi_bgr: cv2.typing.MatLike,
     ) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,

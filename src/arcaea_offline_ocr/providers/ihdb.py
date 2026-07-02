@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from arcaea_offline_ocr.core import hashers
 
@@ -11,6 +11,7 @@ from .base import ImageCategory, ImageIdProvider, ImageIdProviderResult
 
 if TYPE_CHECKING:
     import sqlite3
+    from collections.abc import Callable
 
     from cv2.typing import MatLike
 
@@ -25,7 +26,7 @@ def _sql_hamming_distance(hash1: bytes, hash2: bytes):
         msg = "hash size does not match!"
         raise ValueError(msg)
 
-    return sum(1 for byte1, byte2 in zip(hash1, hash2) if byte1 != byte2)
+    return sum(1 for byte1, byte2 in zip(hash1, hash2, strict=True) if byte1 != byte2)
 
 
 class ImageHashType(IntEnum):
@@ -98,11 +99,11 @@ class ImageHashDatabaseIdProvider(ImageIdProvider):
             ).fetchone()[0]
 
         properties_converter_map = {
-            PROP_KEY_HASH_SIZE: lambda x: int(x),
-            PROP_KEY_HIGH_FREQ_FACTOR: lambda x: int(x),
+            PROP_KEY_HASH_SIZE: int,
+            PROP_KEY_HIGH_FREQ_FACTOR: int,
             PROP_KEY_BUILT_AT: lambda ts: datetime.fromtimestamp(
                 int(ts) / 1000,
-                tz=timezone.utc,
+                tz=UTC,
             ),
         }
         required_properties = [PROP_KEY_HASH_SIZE, PROP_KEY_HIGH_FREQ_FACTOR]

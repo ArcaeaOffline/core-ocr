@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from cv2.typing import MatLike
+from typing import TYPE_CHECKING
 
 from arcaea_offline_ocr.crop import crop_xywh
 from arcaea_offline_ocr.types import XYWHRect
+
+if TYPE_CHECKING:
+    from cv2.typing import MatLike
 
 
 class ChieriBotV4ComponentRois:

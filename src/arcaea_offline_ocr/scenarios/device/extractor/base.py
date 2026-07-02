@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from cv2.typing import MatLike
 
 from arcaea_offline_ocr.crop import crop_xywh
