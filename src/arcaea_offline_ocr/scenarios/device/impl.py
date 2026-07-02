@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from cv2.typing import MatLike
 
 from arcaea_offline_ocr.providers import (
     ImageCategory,
@@ -7,7 +8,6 @@ from arcaea_offline_ocr.providers import (
     OcrKNearestTextProvider,
 )
 from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
-from arcaea_offline_ocr.types import Mat
 
 from .base import DeviceScenarioBase
 from .extractor import DeviceRoisExtractor
@@ -27,7 +27,7 @@ class DeviceScenario(DeviceScenarioBase):
         self.knn_provider = knn_provider
         self.image_id_provider = image_id_provider
 
-    def pfl(self, roi_gray: Mat, factor: float = 1.25):
+    def pfl(self, roi_gray: MatLike, factor: float = 1.25):
         def contour_filter(cnt):
             return cv2.contourArea(cnt) >= 5 * factor
 
@@ -106,7 +106,7 @@ class DeviceScenario(DeviceScenarioBase):
         )
 
     @staticmethod
-    def preprocess_char_icon(img_gray: Mat):
+    def preprocess_char_icon(img_gray: MatLike):
         h, w = img_gray.shape[:2]
         img = cv2.copyMakeBorder(img_gray, max(w - h, 0), 0, 0, 0, cv2.BORDER_REPLICATE)
         h, w = img.shape[:2]

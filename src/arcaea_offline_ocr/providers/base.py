@@ -6,14 +6,14 @@ from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Sequence
 
 if TYPE_CHECKING:
-    from arcaea_offline_ocr.types import Mat
+    import cv2
 
 
 class OcrTextProvider(ABC):
     @abstractmethod
-    def result_raw(self, img: Mat, /, *args, **kwargs) -> Any: ...
+    def result_raw(self, img: cv2.typing.MatLike, /, *args, **kwargs) -> Any: ...
     @abstractmethod
-    def result(self, img: Mat, /, *args, **kwargs) -> str | None: ...
+    def result(self, img: cv2.typing.MatLike, /, *args, **kwargs) -> str | None: ...
 
 
 class ImageCategory(IntEnum):
@@ -32,7 +32,7 @@ class ImageIdProvider(ABC):
     @abstractmethod
     def result(
         self,
-        img: Mat,
+        img: cv2.typing.MatLike,
         category: ImageCategory,
         /,
         *args,
@@ -42,7 +42,7 @@ class ImageIdProvider(ABC):
     @abstractmethod
     def results(
         self,
-        img: Mat,
+        img: cv2.typing.MatLike,
         category: ImageCategory,
         /,
         *args,

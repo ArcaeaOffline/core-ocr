@@ -13,8 +13,7 @@ from .base import OcrTextProvider
 
 if TYPE_CHECKING:
     from cv2.ml import KNearest
-
-    from arcaea_offline_ocr.types import Mat
+    from cv2.typing import MatLike
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ class FixRects:
 
     @staticmethod
     def split_connected(
-        img_masked: Mat,
+        img_masked: MatLike,
         rects: Sequence[tuple[int, int, int, int]],
         rect_wh_ratio: float = 1.05,
         width_range_ratio: float = 0.1,
@@ -122,7 +121,7 @@ class FixRects:
         return return_rects
 
 
-def resize_fill_square(img: Mat, target: int = 20):
+def resize_fill_square(img: MatLike, target: int = 20):
     h, w = img.shape[:2]
     if h > w:
         new_h = target
@@ -170,7 +169,7 @@ def ocr_digit_samples_knn(samples, knn_model: cv2.ml.KNearest, k: int = 4):
 
 
 class OcrKNearestTextProvider(OcrTextProvider):
-    _ContourFilter = Callable[["Mat"], bool]
+    _ContourFilter = Callable[["MatLike"], bool]
     _RectsFilter = Callable[[Sequence[int]], bool]
 
     def __init__(self, model: KNearest):
@@ -178,7 +177,7 @@ class OcrKNearestTextProvider(OcrTextProvider):
 
     def contours(
         self,
-        img: Mat,
+        img: MatLike,
         /,
         *,
         contours_filter: _ContourFilter | None = None,
@@ -191,7 +190,7 @@ class OcrKNearestTextProvider(OcrTextProvider):
 
     def result_raw(
         self,
-        img: Mat,
+        img: MatLike,
         /,
         *,
         fix_rects: bool = True,
@@ -233,7 +232,7 @@ class OcrKNearestTextProvider(OcrTextProvider):
 
     def result(
         self,
-        img: Mat,
+        img: MatLike,
         /,
         *,
         fix_rects: bool = True,

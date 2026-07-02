@@ -1,10 +1,13 @@
+from typing import TYPE_CHECKING
+
+from cv2.typing import MatLike
+
 from arcaea_offline_ocr.crop import crop_xywh
 from arcaea_offline_ocr.scenarios.device.rois import DeviceRois
-from arcaea_offline_ocr.types import Mat
 
 
 class DeviceRoisExtractor:
-    def __init__(self, img: Mat, rois: DeviceRois):
+    def __init__(self, img: MatLike, rois: DeviceRois):
         self.img = img
         self.sizes = rois
 

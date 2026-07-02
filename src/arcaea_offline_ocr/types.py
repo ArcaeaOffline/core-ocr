@@ -1,10 +1,6 @@
 from math import floor
 from typing import Callable, NamedTuple, Union
 
-import numpy as np
-
-Mat = np.ndarray
-
 _IntOrFloat = Union[int, float]
 
 

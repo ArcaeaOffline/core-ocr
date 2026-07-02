@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from sqlite3 import Connection
 
     from arcaea_offline_ocr.providers import ImageCategory
-    from arcaea_offline_ocr.types import Mat
 
 
 def _default_imread_gray(image_path: str):
@@ -31,7 +30,7 @@ class ImageHashDatabaseBuildTask:
     image_path: str
     image_id: str
     category: ImageCategory
-    imread_function: Callable[[str], Mat] = _default_imread_gray
+    imread_function: Callable[[str], cv2.typing.MatLike] = _default_imread_gray
 
 
 @dataclass

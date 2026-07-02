@@ -15,7 +15,7 @@ from arcaea_offline_ocr.scenarios.b30.base import Best30Scenario
 from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
 
 if TYPE_CHECKING:
-    from arcaea_offline_ocr.types import Mat
+    from cv2.typing import MatLike
 
 from .colors import (
     BYD_MAX_HSV,
@@ -59,10 +59,10 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
     def factor(self, factor: float):
         self.__rois.factor = factor
 
-    def set_factor(self, img: Mat):
+    def set_factor(self, img: MatLike):
         self.factor = img.shape[0] / 4400
 
-    def ocr_component_rating_class(self, component_bgr: Mat) -> int:
+    def ocr_component_rating_class(self, component_bgr: MatLike) -> int:
         rating_class_rect = self.rois.component_rois.rating_class_rect.rounded()
 
         rating_class_roi = crop_xywh(component_bgr, rating_class_rect)
@@ -77,7 +77,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             return 0
         return max(enumerate(rating_class_results), key=lambda i: i[1])[0] + 1
 
-    def ocr_component_song_id_results(self, component_bgr: Mat):
+    def ocr_component_song_id_results(self, component_bgr: MatLike):
         jacket_rect = self.rois.component_rois.jacket_rect.floored()
         jacket_roi = cv2.cvtColor(
             crop_xywh(component_bgr, jacket_rect),
@@ -85,7 +85,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         )
         return self.image_id_provider.results(jacket_roi, ImageCategory.JACKET)
 
-    def ocr_component_score_knn(self, component_bgr: Mat) -> int:
+    def ocr_component_score_knn(self, component_bgr: MatLike) -> int:
         # sourcery skip: inline-immediately-returned-variable
         score_rect = self.rois.component_rois.score_rect.rounded()
         score_roi = cv2.cvtColor(
@@ -117,7 +117,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
 
     def find_pfl_rects(
         self,
-        component_pfl_processed: Mat,
+        component_pfl_processed: MatLike,
     ) -> list[tuple[int, int, int, int]]:
         # sourcery skip: inline-immediately-returned-variable
         pfl_roi_find = cv2.morphologyEx(
@@ -145,7 +145,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             for rect in pfl_rects
         ]
 
-    def preprocess_component_pfl(self, component_bgr: Mat) -> Mat:
+    def preprocess_component_pfl(self, component_bgr: MatLike) -> MatLike:
         pfl_rect = self.rois.component_rois.pfl_rect.rounded()
         pfl_roi = crop_xywh(component_bgr, pfl_rect)
         pfl_roi_hsv = cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2HSV)
@@ -193,7 +193,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
 
     def ocr_component_pfl(
         self,
-        component_bgr: Mat,
+        component_bgr: MatLike,
     ) -> tuple[int | None, int | None, int | None]:
         try:
             pfl_roi = self.preprocess_component_pfl(component_bgr)
@@ -208,7 +208,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         except Exception:  # noqa: BLE001
             return (None, None, None)
 
-    def ocr_component(self, component_bgr: Mat) -> OcrScenarioResult:
+    def ocr_component(self, component_bgr: MatLike) -> OcrScenarioResult:
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)
         rating_class = self.ocr_component_rating_class(component_blur)
         song_id_results = self.ocr_component_song_id_results(component_bgr)
@@ -226,17 +226,17 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             played_at=None,
         )
 
-    def components(self, img: Mat, /):
+    def components(self, img: MatLike, /):
         """
         :param img: BGR format image
         """
         self.set_factor(img)
         return self.rois.components(img)
 
-    def result(self, component_img: Mat, /):
+    def result(self, component_img: MatLike, /):
         return self.ocr_component(component_img)
 
-    def results(self, img: Mat, /) -> list[OcrScenarioResult]:
+    def results(self, img: MatLike, /) -> list[OcrScenarioResult]:
         """
         :param img: BGR format image
         """

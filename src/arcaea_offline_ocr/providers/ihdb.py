@@ -12,8 +12,7 @@ from .base import ImageCategory, ImageIdProvider, ImageIdProviderResult
 if TYPE_CHECKING:
     import sqlite3
 
-    from arcaea_offline_ocr.types import Mat
-
+    from cv2.typing import MatLike
 
 T = TypeVar("T")
 PROP_KEY_HASH_SIZE = "hash_size"
@@ -158,10 +157,10 @@ ORDER BY distance ASC LIMIT 10""",
         return results
 
     @staticmethod
-    def hash_mat_to_bytes(hash_mat: Mat) -> bytes:
+    def hash_mat_to_bytes(hash_mat: MatLike) -> bytes:
         return bytes([255 if b else 0 for b in hash_mat.flatten()])
 
-    def results(self, img: Mat, category: ImageCategory, /):
+    def results(self, img: MatLike, category: ImageCategory, /):
         results: list[ImageHashDatabaseIdProviderResult] = []
 
         results.extend(
@@ -192,7 +191,7 @@ ORDER BY distance ASC LIMIT 10""",
 
     def result(
         self,
-        img: Mat,
+        img: MatLike,
         category: ImageCategory,
         /,
         *,
