@@ -13,12 +13,13 @@ if TYPE_CHECKING:
     import sqlite3
     from collections.abc import Callable
 
+    import numpy as np
     from cv2.typing import MatLike
 
 T = TypeVar("T")
 PROP_KEY_HASH_SIZE = "hash_size"
 PROP_KEY_HIGH_FREQ_FACTOR = "high_freq_factor"
-PROP_KEY_BUILT_AT = "built_at"
+PROP_KEY_BUILT_TIMESTAMP = "built_timestamp"
 
 
 def _sql_hamming_distance(hash1: bytes, hash2: bytes):
@@ -27,6 +28,10 @@ def _sql_hamming_distance(hash1: bytes, hash2: bytes):
         raise ValueError(msg)
 
     return sum(1 for byte1, byte2 in zip(hash1, hash2, strict=True) if byte1 != byte2)
+
+
+def _parse_built_timestamp(ts: str) -> datetime:
+    return datetime.fromtimestamp(int(ts) / 1000, tz=UTC)
 
 
 class ImageHashType(IntEnum):
@@ -43,20 +48,23 @@ class ImageHashDatabaseIdProviderResult(ImageIdProviderResult):
 class MissingPropertiesError(Exception):
     keys: list[str]
 
-    def __init__(self, keys, *args):
+    def __init__(self, keys: list[str], *args: object):
         super().__init__(*args)
         self.keys = keys
 
 
 class ImageHashDatabaseIdProvider(ImageIdProvider):
+    conn: sqlite3.Connection
+    _hashes_count: dict[ImageCategory, int]
+
     def __init__(self, conn: sqlite3.Connection):
         self.conn = conn
         self.conn.create_function("HAMMING_DISTANCE", 2, _sql_hamming_distance)
 
-        self.properties = {
+        self.properties: dict[str, Any] = {
             PROP_KEY_HASH_SIZE: -1,
             PROP_KEY_HIGH_FREQ_FACTOR: -1,
-            PROP_KEY_BUILT_AT: None,
+            PROP_KEY_BUILT_TIMESTAMP: None,
         }
 
         self._hashes_count = {
@@ -77,15 +85,15 @@ class ImageHashDatabaseIdProvider(ImageIdProvider):
         return self.properties[PROP_KEY_HIGH_FREQ_FACTOR]
 
     @property
-    def built_at(self) -> datetime | None:
-        return self.properties.get(PROP_KEY_BUILT_AT)
+    def built_timestamp(self) -> datetime | None:
+        return self.properties.get(PROP_KEY_BUILT_TIMESTAMP)
 
     @property
     def hash_length(self):
         return self._hash_length
 
     def _initialize(self):
-        def get_property(key, converter: Callable[[Any], T]) -> T | None:
+        def get_property(key: str, converter: Callable[[Any], T]) -> T | None:
             result = self.conn.execute(
                 "SELECT value FROM properties WHERE key = ?",
                 (key,),
@@ -94,17 +102,14 @@ class ImageHashDatabaseIdProvider(ImageIdProvider):
 
         def set_hashes_count(category: ImageCategory):
             self._hashes_count[category] = self.conn.execute(
-                "SELECT COUNT(DISTINCT `id`) FROM hashes WHERE category = ?",
+                "SELECT COUNT(DISTINCT `label`) FROM hashes WHERE type = ?",
                 (category.value,),
             ).fetchone()[0]
 
         properties_converter_map = {
             PROP_KEY_HASH_SIZE: int,
             PROP_KEY_HIGH_FREQ_FACTOR: int,
-            PROP_KEY_BUILT_AT: lambda ts: datetime.fromtimestamp(
-                int(ts) / 1000,
-                tz=UTC,
-            ),
+            PROP_KEY_BUILT_TIMESTAMP: _parse_built_timestamp,
         }
         required_properties = [PROP_KEY_HASH_SIZE, PROP_KEY_HIGH_FREQ_FACTOR]
 
@@ -136,15 +141,15 @@ class ImageHashDatabaseIdProvider(ImageIdProvider):
         cursor = self.conn.execute(
             """
 SELECT
-    `id`,
+    `label`,
     HAMMING_DISTANCE(hash, ?) AS distance
 FROM hashes
-WHERE category = ? AND hash_type = ?
+WHERE type = ? AND hash_type = ?
 ORDER BY distance ASC LIMIT 10""",
             (hash_data, category.value, hash_type.value),
         )
 
-        results = []
+        results: list[ImageHashDatabaseIdProviderResult] = []
         for id_, distance in cursor.fetchall():
             results.append(
                 ImageHashDatabaseIdProviderResult(
@@ -158,7 +163,9 @@ ORDER BY distance ASC LIMIT 10""",
         return results
 
     @staticmethod
-    def hash_mat_to_bytes(hash_mat: MatLike) -> bytes:
+    def hash_mat_to_bytes(
+        hash_mat: np.ndarray[tuple[Any, ...], np.dtype[np.bool_]],
+    ) -> bytes:
         return bytes([255 if b else 0 for b in hash_mat.flatten()])
 
     def results(self, img: MatLike, category: ImageCategory, /):
@@ -198,6 +205,12 @@ ORDER BY distance ASC LIMIT 10""",
         *,
         hash_type: ImageHashType = ImageHashType.DCT,
     ):
-        return next(
-            it for it in self.results(img, category) if it.image_hash_type == hash_type
-        )
+        return sorted(
+            (
+                it
+                for it in self.results(img, category)
+                if it.image_hash_type == hash_type
+            ),
+            key=lambda it: it.confidence,
+            reverse=True,
+        )[0]
