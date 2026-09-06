@@ -4,7 +4,7 @@
 
 ## Example
 
-> Results from `arcaea_offline_ocr 0.1.0a2`
+> Results from `arcaea_offline_ocr 0.1.0b1`
 
 ### Build an image hash database (ihdb)
 
