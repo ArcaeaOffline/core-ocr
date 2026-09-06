@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 import math
 
 import cv2
 import numpy as np
 
 __all__ = ["CropBlackEdges", "crop_xywh"]
+
+logger = logging.getLogger(__name__)
 
 
 def crop_xywh(mat: cv2.typing.MatLike, rect: tuple[int, int, int, int]):
@@ -76,3 +79,17 @@ class CropBlackEdges:
     ) -> cv2.typing.MatLike:
         rect = cls.get_crop_rect(cv2.cvtColor(img, convert_flag), black_threshold)
         return crop_xywh(img, rect)
+
+    @classmethod
+    def crop_or_original(
+        cls,
+        img: cv2.typing.MatLike,
+        convert_flag: int = cv2.COLOR_BGR2GRAY,
+        black_threshold: int = 25,
+    ) -> cv2.typing.MatLike:
+        """Try cropping the image, return the original image if any error occurred."""
+        try:
+            return cls.crop(img, convert_flag, black_threshold)
+        except Exception:
+            logger.exception("Error cropping an image")
+            return img
