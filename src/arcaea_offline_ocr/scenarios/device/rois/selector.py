@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING, ClassVar
 import cv2
 import numpy as np
 
-from arcaea_offline_ocr.scenarios.device.masker.auto import DeviceRoisMaskerAutoT1
+from arcaea_offline_ocr.scenarios.device.masker.auto import (
+    DeviceRoisMaskerAutoT1,
+    DeviceRoisMaskerAutoT2,
+)
 
 from .auto import DeviceRoisAutoT1, DeviceRoisAutoT2
 
@@ -15,6 +18,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from cv2.typing import MatLike
+
+    from arcaea_offline_ocr.scenarios.device.masker.base import DeviceRoisMasker
+
+    from .base import DeviceRois
 
 
 class DeviceRoisAutoSelectorResult(Enum):
@@ -168,3 +175,17 @@ class DeviceRoisAutoSelector:
         if all(confidence == 0.0 for confidence in results.values()):
             return fallback or DeviceRoisAutoSelectorResult.UNKNOWN
         return max(results.items(), key=lambda it: it[1])[0].result
+
+    @staticmethod
+    def create_rois_and_masker(
+        result: DeviceRoisAutoSelectorResult,
+        w: int,
+        h: int,
+    ) -> tuple[DeviceRois, DeviceRoisMasker]:
+        """Create the rois and masker pair matching the selector result."""
+        if result is DeviceRoisAutoSelectorResult.T1:
+            return DeviceRoisAutoT1(w, h), DeviceRoisMaskerAutoT1()
+        if result is DeviceRoisAutoSelectorResult.T2:
+            return DeviceRoisAutoT2(w, h), DeviceRoisMaskerAutoT2()
+        msg = f"no rois/masker pair for {result}"
+        raise ValueError(msg)

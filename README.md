@@ -66,25 +66,14 @@ from arcaea_offline_ocr.providers import (
     ImageHashDatabaseIdProvider,
     OcrCrnnTextProvider,
 )
-from arcaea_offline_ocr.scenarios.device import (
-    DeviceRoisAutoT2,
-    DeviceRoisExtractor,
-    DeviceRoisMaskerAutoT2,
-    DeviceScenario,
-)
+from arcaea_offline_ocr.scenarios.device import DeviceScenario
 
 
 with sqlite3.connect("/path/to/ihdb-X.Y.Z.db") as conn:
     img = cv2.imread("/path/to/your/screenshot.jpg")
-    h, w = img.shape[:2]
 
-    r = DeviceRoisAutoT2(w, h)
-    m = DeviceRoisMaskerAutoT2()
-    e = DeviceRoisExtractor(img, r)
-
-    scenario = DeviceScenario(
-        extractor=e,
-        masker=m,
+    scenario = DeviceScenario.for_image(
+        img,
         crnn_provider=OcrCrnnTextProvider("/path/to/model_patched.onnx"),
         image_id_provider=ImageHashDatabaseIdProvider(conn),
     )

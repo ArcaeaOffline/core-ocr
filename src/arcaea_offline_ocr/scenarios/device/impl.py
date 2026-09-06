@@ -1,36 +1,72 @@
+from typing import Self
+
 import cv2
 import numpy as np
 from cv2.typing import MatLike
 
+from arcaea_offline_ocr.crop import CropBlackEdges
 from arcaea_offline_ocr.providers import (
     ImageCategory,
     ImageIdProvider,
-    OcrCrnnTextProvider,
+    OcrTextProvider,
 )
 from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
 
 from .base import DeviceScenarioBase
 from .extractor import DeviceRoisExtractor
 from .masker import DeviceRoisMasker
+from .rois import DeviceRoisAutoSelector, DeviceRoisAutoSelectorResult
 
 
 class DeviceScenario(DeviceScenarioBase):
     extractor: DeviceRoisExtractor
     masker: DeviceRoisMasker
-    crnn_provider: OcrCrnnTextProvider
+    crnn_provider: OcrTextProvider
     image_id_provider: ImageIdProvider
 
     def __init__(
         self,
         extractor: DeviceRoisExtractor,
         masker: DeviceRoisMasker,
-        crnn_provider: OcrCrnnTextProvider,
+        crnn_provider: OcrTextProvider,
         image_id_provider: ImageIdProvider,
     ):
         self.extractor = extractor
         self.masker = masker
         self.crnn_provider = crnn_provider
         self.image_id_provider = image_id_provider
+
+    @classmethod
+    def for_image(
+        cls,
+        img_bgr: MatLike,
+        crnn_provider: OcrTextProvider,
+        image_id_provider: ImageIdProvider,
+        *,
+        fallback: DeviceRoisAutoSelectorResult | None = None,
+    ) -> Self:
+        """
+        Build a scenario from a raw screenshot.
+
+        Black edges are cropped first; the rois type (T1/T2) is then
+        auto-detected on the cropped image. Raises ValueError when the
+        type cannot be determined and no fallback is given.
+        """
+        img_cropped = CropBlackEdges.crop_or_original(img_bgr)
+        h, w = img_cropped.shape[:2]
+
+        result = DeviceRoisAutoSelector.select(img_cropped, fallback)
+        if result is DeviceRoisAutoSelectorResult.UNKNOWN:
+            msg = "cannot determine device rois type; pass an explicit fallback"
+            raise ValueError(msg)
+
+        rois, masker = DeviceRoisAutoSelector.create_rois_and_masker(result, w, h)
+        return cls(
+            DeviceRoisExtractor(img_cropped, rois),
+            masker,
+            crnn_provider,
+            image_id_provider,
+        )
 
     def pure(self):
         ocr_result = self.crnn_provider.result(self.extractor.pure)
