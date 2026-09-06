@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, ClassVar
 
 import cv2
 import numpy as np
-import onnxruntime as ort
 
 from .base import OcrTextProvider
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    import onnxruntime as ort
     from cv2.typing import MatLike
 
 logger = logging.getLogger(__name__)
@@ -42,6 +42,9 @@ class OcrCrnnTextProvider(OcrTextProvider):
         self.labels = list(info["labels"])
         self.blank_token = info["blank_token"]
         self.pad_token = info["pad_token"]
+
+        # lazy import only when needed
+        import onnxruntime as ort
 
         self.session = ort.InferenceSession(str(model_path))
         self._input_name = str(self.session.get_inputs()[0].name)
