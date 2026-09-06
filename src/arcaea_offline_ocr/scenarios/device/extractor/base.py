@@ -5,6 +5,9 @@ from arcaea_offline_ocr.scenarios.device.rois import DeviceRois
 
 
 class DeviceRoisExtractor:
+    img: MatLike
+    sizes: DeviceRois
+
     def __init__(self, img: MatLike, rois: DeviceRois):
         self.img = img
         self.sizes = rois

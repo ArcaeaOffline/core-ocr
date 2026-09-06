@@ -1,9 +1,14 @@
+from abc import ABC
+
 from arcaea_offline_ocr.types import XYWHRect
 
 from .base import DeviceRois
 
 
-class DeviceRoisAuto(DeviceRois):
+class DeviceRoisAuto(DeviceRois, ABC):
+    w: int
+    h: int
+
     def __init__(self, w: int, h: int):
         self.w = w
         self.h = h

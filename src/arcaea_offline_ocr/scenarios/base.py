@@ -4,11 +4,11 @@ from abc import ABC
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from arcaea_offline_ocr.providers import ImageIdProviderResult
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import datetime
-
-    from arcaea_offline_ocr.providers import ImageIdProviderResult
 
 
 @dataclass(kw_only=True)
@@ -17,9 +17,11 @@ class OcrScenarioResult:
     rating_class: int
     score: int
 
-    song_id_results: Sequence[ImageIdProviderResult] = field(default_factory=list)
+    song_id_results: Sequence[ImageIdProviderResult] = field(
+        default_factory=list[ImageIdProviderResult],
+    )
     partner_id_results: Sequence[ImageIdProviderResult] = field(
-        default_factory=list,
+        default_factory=list[ImageIdProviderResult],
     )
 
     pure: int | None = None

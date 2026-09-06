@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from arcaea_offline_ocr.crop import crop_xywh
 from arcaea_offline_ocr.types import XYWHRect
@@ -104,7 +104,7 @@ class ChieriBotV4Rois:
     def horizontal_items(self):
         return 3
 
-    vertical_items = 10
+    vertical_items: ClassVar[int] = 10
 
     @property
     def b33_vertical_gap(self):
@@ -112,7 +112,7 @@ class ChieriBotV4Rois:
 
     def components(self, img_bgr: MatLike) -> list[MatLike]:
         first_rect = XYWHRect(x=self.left, y=self.top, w=self.width, h=self.height)
-        results = []
+        results: list[MatLike] = []
 
         last_rect = first_rect
         for vi in range(self.vertical_items):
