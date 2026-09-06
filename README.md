@@ -64,7 +64,7 @@ import cv2
 
 from arcaea_offline_ocr.providers import (
     ImageHashDatabaseIdProvider,
-    OcrKNearestTextProvider,
+    OcrCrnnTextProvider,
 )
 from arcaea_offline_ocr.scenarios.device import (
     DeviceRoisAutoT2,
@@ -85,9 +85,7 @@ with sqlite3.connect("/path/to/ihdb-X.Y.Z.db") as conn:
     scenario = DeviceScenario(
         extractor=e,
         masker=m,
-        knn_provider=OcrKNearestTextProvider(
-            cv2.ml.KNearest.load("/path/to/knn_model.dat"),
-        ),
+        crnn_provider=OcrCrnnTextProvider("/path/to/model_patched.onnx"),
         image_id_provider=ImageHashDatabaseIdProvider(conn),
     )
     result = scenario.result()

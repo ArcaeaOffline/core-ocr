@@ -5,7 +5,7 @@ from cv2.typing import MatLike
 from arcaea_offline_ocr.providers import (
     ImageCategory,
     ImageIdProvider,
-    OcrKNearestTextProvider,
+    OcrCrnnTextProvider,
 )
 from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
 
@@ -15,61 +15,37 @@ from .masker import DeviceRoisMasker
 
 
 class DeviceScenario(DeviceScenarioBase):
+    extractor: DeviceRoisExtractor
+    masker: DeviceRoisMasker
+    crnn_provider: OcrCrnnTextProvider
+    image_id_provider: ImageIdProvider
+
     def __init__(
         self,
         extractor: DeviceRoisExtractor,
         masker: DeviceRoisMasker,
-        knn_provider: OcrKNearestTextProvider,
+        crnn_provider: OcrCrnnTextProvider,
         image_id_provider: ImageIdProvider,
     ):
         self.extractor = extractor
         self.masker = masker
-        self.knn_provider = knn_provider
+        self.crnn_provider = crnn_provider
         self.image_id_provider = image_id_provider
 
-    def pfl(self, roi_gray: MatLike, factor: float = 1.25):
-        def contour_filter(cnt):
-            return cv2.contourArea(cnt) >= 5 * factor
-
-        contours = self.knn_provider.contours(roi_gray)
-        contours_filtered = self.knn_provider.contours(
-            roi_gray,
-            contours_filter=contour_filter,
-        )
-
-        roi_ocr = roi_gray.copy()
-        contours_filtered_flattened = {tuple(c.flatten()) for c in contours_filtered}
-        for contour in contours:
-            if tuple(contour.flatten()) in contours_filtered_flattened:
-                continue
-            roi_ocr = cv2.fillPoly(roi_ocr, [contour], [0])
-
-        ocr_result = self.knn_provider.result(
-            roi_ocr,
-            contours_filter=lambda cnt: cv2.contourArea(cnt) >= 5 * factor,
-            rects_filter=lambda rect: rect[2] >= 5 * factor and rect[3] >= 6 * factor,
-        )
-
+    def pure(self):
+        ocr_result = self.crnn_provider.result(self.extractor.pure)
         return int(ocr_result) if ocr_result else 0
 
-    def pure(self):
-        return self.pfl(self.masker.pure(self.extractor.pure))
-
     def far(self):
-        return self.pfl(self.masker.far(self.extractor.far))
+        ocr_result = self.crnn_provider.result(self.extractor.far)
+        return int(ocr_result) if ocr_result else 0
 
     def lost(self):
-        return self.pfl(self.masker.lost(self.extractor.lost))
+        ocr_result = self.crnn_provider.result(self.extractor.lost)
+        return int(ocr_result) if ocr_result else 0
 
     def score(self):
-        roi = self.masker.score(self.extractor.score)
-        contours = self.knn_provider.contours(roi)
-        for contour in contours:
-            if (
-                cv2.boundingRect(contour)[3] < roi.shape[0] * 0.6
-            ):  # h < score_component_h * 0.6
-                roi = cv2.fillPoly(roi, [contour], [0])
-        ocr_result = self.knn_provider.result(roi)
+        ocr_result = self.crnn_provider.result(self.extractor.score)
         return int(ocr_result) if ocr_result else 0
 
     def rating_class(self):
@@ -84,9 +60,7 @@ class DeviceScenario(DeviceScenarioBase):
         return max(enumerate(results), key=lambda i: np.count_nonzero(i[1]))[0]
 
     def max_recall(self):
-        ocr_result = self.knn_provider.result(
-            self.masker.max_recall(self.extractor.max_recall),
-        )
+        ocr_result = self.crnn_provider.result(self.extractor.max_recall)
         return int(ocr_result) if ocr_result else None
 
     def clear_status(self):

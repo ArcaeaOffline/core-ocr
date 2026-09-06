@@ -8,14 +8,14 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    import cv2
+    from cv2.typing import MatLike
 
 
 class OcrTextProvider(ABC):
     @abstractmethod
-    def result_raw(self, img: cv2.typing.MatLike, /, *args, **kwargs) -> Any: ...
+    def result_raw(self, img: MatLike, /, *args: Any, **kwargs: Any) -> Any: ...
     @abstractmethod
-    def result(self, img: cv2.typing.MatLike, /, *args, **kwargs) -> str | None: ...
+    def result(self, img: MatLike, /, *args: Any, **kwargs: Any) -> str | None: ...
 
 
 class ImageCategory(IntEnum):
@@ -34,19 +34,19 @@ class ImageIdProvider(ABC):
     @abstractmethod
     def result(
         self,
-        img: cv2.typing.MatLike,
+        img: MatLike,
         category: ImageCategory,
         /,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> ImageIdProviderResult: ...
 
     @abstractmethod
     def results(
         self,
-        img: cv2.typing.MatLike,
+        img: MatLike,
         category: ImageCategory,
         /,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> Sequence[ImageIdProviderResult]: ...

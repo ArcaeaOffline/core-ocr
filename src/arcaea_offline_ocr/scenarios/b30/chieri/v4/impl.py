@@ -9,7 +9,7 @@ from arcaea_offline_ocr.crop import crop_xywh
 from arcaea_offline_ocr.providers import (
     ImageCategory,
     ImageIdProvider,
-    OcrKNearestTextProvider,
+    OcrTextProvider,
 )
 from arcaea_offline_ocr.scenarios.b30.base import Best30Scenario
 from arcaea_offline_ocr.scenarios.base import OcrScenarioResult
@@ -37,15 +37,15 @@ from .rois import ChieriBotV4Rois
 class ChieriBotV4Best30Scenario(Best30Scenario):
     def __init__(
         self,
-        score_knn_provider: OcrKNearestTextProvider,
-        pfl_knn_provider: OcrKNearestTextProvider,
+        score_provider: OcrTextProvider,
+        pfl_provider: OcrTextProvider,
         image_id_provider: ImageIdProvider,
         factor: float = 1.0,
     ):
         self.__rois = ChieriBotV4Rois(factor)
-        self.pfl_knn_provider = pfl_knn_provider
-        self.score_knn_provider = score_knn_provider
-        self.image_id_provider = image_id_provider
+        self.pfl_provider: OcrTextProvider = pfl_provider
+        self.score_provider: OcrTextProvider = score_provider
+        self.image_id_provider: ImageIdProvider = image_id_provider
 
     @property
     def rois(self):
@@ -85,34 +85,10 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         )
         return self.image_id_provider.results(jacket_roi, ImageCategory.JACKET)
 
-    def ocr_component_score_knn(self, component_bgr: MatLike) -> int:
-        # sourcery skip: inline-immediately-returned-variable
+    def ocr_component_score(self, component_bgr: MatLike) -> int:
         score_rect = self.rois.component_rois.score_rect.rounded()
-        score_roi = cv2.cvtColor(
-            crop_xywh(component_bgr, score_rect),
-            cv2.COLOR_BGR2GRAY,
-        )
-        _, score_roi = cv2.threshold(
-            score_roi,
-            0,
-            255,
-            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
-        )
-        if score_roi[1][1] == 255:
-            score_roi = 255 - score_roi
-
-        contours, _ = cv2.findContours(
-            score_roi,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_SIMPLE,
-        )
-        for contour in contours:
-            rect = cv2.boundingRect(contour)
-            if rect[3] > score_roi.shape[0] * 0.5:
-                continue
-            score_roi = cv2.fillPoly(score_roi, [contour], 0)
-
-        ocr_result = self.score_knn_provider.result(score_roi)
+        score_roi = crop_xywh(component_bgr, score_rect)
+        ocr_result = self.score_provider.result(score_roi)
         return int(ocr_result) if ocr_result else 0
 
     def find_pfl_rects(
@@ -145,7 +121,11 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             for rect in pfl_rects
         ]
 
-    def preprocess_component_pfl(self, component_bgr: MatLike) -> MatLike:
+    def preprocess_component_pfl(
+        self,
+        component_bgr: MatLike,
+    ) -> tuple[MatLike, MatLike]:
+        """Return the background-filled BGR roi and a mask for locating digits."""
         pfl_rect = self.rois.component_rois.pfl_rect.rounded()
         pfl_roi = crop_xywh(component_bgr, pfl_rect)
         pfl_roi_hsv = cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2HSV)
@@ -165,19 +145,19 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         # get threshold of blurred image, try ignoring the lines of bg bar
         pfl_roi_blurred = cv2.GaussianBlur(pfl_roi, (5, 5), 0)
         # pfl_roi_blurred = cv2.medianBlur(pfl_roi, 3)
-        _, pfl_roi_blurred_threshold = cv2.threshold(
+        pfl_roi_blurred_threshold = cv2.threshold(
             pfl_roi_blurred,
             0,
             255,
             cv2.THRESH_BINARY + cv2.THRESH_OTSU,
-        )
+        )[1]
         # and a threshold of the original roi
-        _, pfl_roi_threshold = cv2.threshold(
+        pfl_roi_threshold = cv2.threshold(
             pfl_roi,
             0,
             255,
             cv2.THRESH_BINARY + cv2.THRESH_OTSU,
-        )
+        )[1]
         # turn thresholds into black background
         if pfl_roi_blurred_threshold[2][2] == 255:
             pfl_roi_blurred_threshold = 255 - pfl_roi_blurred_threshold
@@ -189,22 +169,24 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             result,
             cv2.getStructuringElement(cv2.MORPH_CROSS, (2, 2)),
         )
-        return result_eroded if len(self.find_pfl_rects(result_eroded)) == 3 else result
+        mask = result_eroded if len(self.find_pfl_rects(result_eroded)) == 3 else result
+        return pfl_roi, mask
 
     def ocr_component_pfl(
         self,
         component_bgr: MatLike,
     ) -> tuple[int | None, int | None, int | None]:
         try:
-            pfl_roi = self.preprocess_component_pfl(component_bgr)
-            pfl_rects = self.find_pfl_rects(pfl_roi)
-            pure_far_lost = []
+            pfl_roi, pfl_mask = self.preprocess_component_pfl(component_bgr)
+            pfl_rects = self.find_pfl_rects(pfl_mask)
+            pure_far_lost: list[int | None] = []
             for pfl_roi_rect in pfl_rects:
+                # feed CRNN the BGR roi, the mask is only for locating digits
                 roi = crop_xywh(pfl_roi, pfl_roi_rect)
-                result = self.pfl_knn_provider.result(roi)
+                result = self.pfl_provider.result(roi)
                 pure_far_lost.append(int(result) if result else None)
 
-            return tuple(pure_far_lost)
+            return tuple(pure_far_lost)  # pyright: ignore[reportReturnType]
         except Exception:  # noqa: BLE001
             return (None, None, None)
 
@@ -212,8 +194,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)
         rating_class = self.ocr_component_rating_class(component_blur)
         song_id_results = self.ocr_component_song_id_results(component_bgr)
-        # score = self.ocr_component_score(component_blur)
-        score = self.ocr_component_score_knn(component_bgr)
+        score = self.ocr_component_score(component_bgr)
         pure, far, lost = self.ocr_component_pfl(component_bgr)
         return OcrScenarioResult(
             song_id=song_id_results[0].image_id,

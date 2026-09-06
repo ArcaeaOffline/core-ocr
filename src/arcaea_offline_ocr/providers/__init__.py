@@ -1,12 +1,12 @@
 from .base import ImageCategory, ImageIdProvider, ImageIdProviderResult, OcrTextProvider
+from .crnn import OcrCrnnTextProvider
 from .ihdb import ImageHashDatabaseIdProvider
-from .knn import OcrKNearestTextProvider
 
 __all__ = [
     "ImageCategory",
     "ImageHashDatabaseIdProvider",
     "ImageIdProvider",
     "ImageIdProviderResult",
-    "OcrKNearestTextProvider",
+    "OcrCrnnTextProvider",
     "OcrTextProvider",
 ]
