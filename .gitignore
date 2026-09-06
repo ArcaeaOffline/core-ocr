@@ -1,5 +1,6 @@
 __debug*
 .vscode/
+assets/
 
 *venv*/
 
