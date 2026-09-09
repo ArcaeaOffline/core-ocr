@@ -10,16 +10,20 @@ resolution-markers = [
     "(python_full_version < '3.12' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux')",
 ]
 
+[manifest]
+overrides = [{ name = "opencv-python-headless", marker = "sys_platform == 'never'" }]
+
 [[package]]
 name = "arcaea-offline-ocr"
 source = { editable = "." }
 dependencies = [
     { name = "onnxruntime" },
-    { name = "opencv-python" },
+    { name = "opencv-python-headless", marker = "sys_platform == 'never'" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "opencv-python" },
     { name = "pre-commit" },
     { name = "ruff" },
 ]
@@ -27,11 +31,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "onnxruntime", specifier = ">=1,<2" },
-    { name = "opencv-python", specifier = ">=4,<5" },
+    { name = "opencv-python-headless", specifier = ">=4,<5" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "opencv-python", specifier = ">=4,<5" },
     { name = "pre-commit" },
     { name = "ruff" },
 ]
@@ -223,6 +228,15 @@ wheels = [
     { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/fb/d7/1d5941a9dde095468b288d989ff6539dd69cd429dbf1b9e839013d21b6f0/opencv_python-4.11.0.86-cp37-abi3-win32.whl", hash = "sha256:810549cb2a4aedaa84ad9a1c92fbfdfc14090e2749cedf2c1589ad8359aa169b", size = 29384337, upload-time = "2025-01-16T13:52:13.549Z" },
     { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a4/7d/f1c30a92854540bf789e9cd5dde7ef49bbe63f855b85a2e6b3db8135c591/opencv_python-4.11.0.86-cp37-abi3-win_amd64.whl", hash = "sha256:085ad9b77c18853ea66283e98affefe2de8cc4c1f43eda4c100cf9b2721142ec", size = 39488044, upload-time = "2025-01-16T13:52:21.928Z" },
 ]
+
+[[package]]
+name = "opencv-python-headless"
+version = "5.0.0.93"
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/" }
+dependencies = [
+    { name = "numpy", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+]
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/1d/99/76b7c80252aa83c1af16393454aafd125a0287101afe8deb0a6821af0e30/opencv_python_headless-5.0.0.93.tar.gz", hash = "sha256:b82f9831daab90b725c7c1ee1b36cb5732c367096ac76d119e64e14eb70d5f3c", size = 81817738, upload-time = "2026-07-02T07:01:06.039Z" }
 
 [[package]]
 name = "packaging"
