@@ -22,8 +22,12 @@ if TYPE_CHECKING:
     from arcaea_offline_ocr.providers import ImageCategory
 
 
-def _default_imread_gray(image_path: str):
-    return cv2.cvtColor(cv2.imread(image_path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2GRAY)
+def _default_imread_gray(image_path: str) -> cv2.typing.MatLike:
+    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    if img is None:
+        msg = f"Failed to read image: {image_path}"
+        raise OSError(msg)
+    return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
 @dataclass
