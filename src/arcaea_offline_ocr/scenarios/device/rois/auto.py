@@ -1,5 +1,7 @@
 from abc import ABC
 
+from typing_extensions import override
+
 from arcaea_offline_ocr.types import XYWHRect
 
 from .base import DeviceRois
@@ -54,6 +56,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         return 26 * self.factor
 
     @property
+    @override
     def pure(self):
         return XYWHRect(
             self.pfl_x,
@@ -63,6 +66,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def far(self):
         return XYWHRect(
             self.pfl_x,
@@ -72,6 +76,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def lost(self):
         return XYWHRect(
             self.pfl_x,
@@ -81,6 +86,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def score(self):
         w = 280 * self.factor
         h = 45 * self.factor
@@ -92,6 +98,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def rating_class(self):
         return XYWHRect(
             self.w_mid - 610 * self.factor,
@@ -101,6 +108,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def max_recall(self):
         return XYWHRect(
             self.w_mid - 465 * self.factor,
@@ -110,6 +118,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def jacket(self):
         return XYWHRect(
             self.w_mid - 610 * self.factor,
@@ -119,6 +128,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def clear_status(self):
         w = 550 * self.factor
         h = 60 * self.factor
@@ -130,6 +140,7 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         )
 
     @property
+    @override
     def partner_icon(self):
         w = 90 * self.factor
         h = 75 * self.factor
@@ -178,6 +189,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         return 24 * self.factor
 
     @property
+    @override
     def pure(self):
         return XYWHRect(
             self.pfl_x,
@@ -187,6 +199,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def far(self):
         return XYWHRect(
             self.pfl_x,
@@ -196,6 +209,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def lost(self):
         return XYWHRect(
             self.pfl_x,
@@ -205,6 +219,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def score(self):
         w = 420 * self.factor
         h = 70 * self.factor
@@ -216,6 +231,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def rating_class(self):
         return XYWHRect(
             max(0, self.w_mid - 965 * self.factor),
@@ -225,6 +241,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def max_recall(self):
         return XYWHRect(
             self.w_mid - 625 * self.factor,
@@ -234,6 +251,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def jacket(self):
         return XYWHRect(
             self.w_mid - 915 * self.factor,
@@ -243,6 +261,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def clear_status(self):
         w = 825 * self.factor
         h = 90 * self.factor
@@ -254,6 +273,7 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         )
 
     @property
+    @override
     def partner_icon(self):
         w = 135 * self.factor
         h = 110 * self.factor

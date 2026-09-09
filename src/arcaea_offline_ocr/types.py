@@ -2,6 +2,8 @@ from collections.abc import Callable, Iterable
 from math import floor
 from typing import Any, NamedTuple
 
+from typing_extensions import override
+
 _IntOrFloat = int | float
 
 
@@ -22,6 +24,7 @@ class XYWHRect(NamedTuple):
 
     # tuple's operators accept arbitrary iterables; the rect domain only allows
     # 4-element numeric sequences, so the isinstance guard rejects other shapes.
+    @override
     def __add__(self, other: Iterable[Any]):
         if not isinstance(other, (list, tuple)) or len(other) != 4:
             raise TypeError
@@ -34,6 +37,7 @@ class XYWHRect(NamedTuple):
 
         return self.__class__(*[a - b for a, b in zip(self, other, strict=False)])
 
+    @override
     def __mul__(self, other: Any):
         if not isinstance(other, (int, float)):
             raise TypeError

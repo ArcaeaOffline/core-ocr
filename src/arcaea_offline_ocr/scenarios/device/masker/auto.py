@@ -3,6 +3,7 @@ from typing import ClassVar
 
 import cv2
 import numpy as np
+from typing_extensions import override
 
 from .base import DeviceRoisMasker
 
@@ -65,46 +66,57 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         return cv2.inRange(img_bgr, cls.GRAY_BGR_MIN, cls.GRAY_BGR_MAX)
 
     @classmethod
+    @override
     def pure(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.gray(roi_bgr)
 
     @classmethod
+    @override
     def far(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.gray(roi_bgr)
 
     @classmethod
+    @override
     def lost(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.gray(roi_bgr)
 
     @classmethod
+    @override
     def score(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.SCORE_HSV_MIN, cls.SCORE_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_pst(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.PST_HSV_MIN, cls.PST_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_prs(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.PRS_HSV_MIN, cls.PRS_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_ftr(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.FTR_HSV_MIN, cls.FTR_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_byd(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.BYD_HSV_MIN, cls.BYD_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_etr(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.ETR_HSV_MIN, cls.ETR_HSV_MAX)
 
     @classmethod
+    @override
     def max_recall(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.gray(roi_bgr)
 
     @classmethod
+    @override
     def clear_status_track_lost(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -113,6 +125,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_track_complete(
         cls,
         roi_bgr: cv2.typing.MatLike,
@@ -124,6 +137,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_full_recall(
         cls,
         roi_bgr: cv2.typing.MatLike,
@@ -135,6 +149,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_pure_memory(
         cls,
         roi_bgr: cv2.typing.MatLike,
@@ -188,42 +203,52 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         return cls.mask_bgr_in_hsv(roi_bgr, cls.PFL_HSV_MIN, cls.PFL_HSV_MAX)
 
     @classmethod
+    @override
     def pure(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.pfl(roi_bgr)
 
     @classmethod
+    @override
     def far(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.pfl(roi_bgr)
 
     @classmethod
+    @override
     def lost(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.pfl(roi_bgr)
 
     @classmethod
+    @override
     def score(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.SCORE_HSV_MIN, cls.SCORE_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_pst(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.PST_HSV_MIN, cls.PST_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_prs(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.PRS_HSV_MIN, cls.PRS_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_ftr(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.FTR_HSV_MIN, cls.FTR_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_byd(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.BYD_HSV_MIN, cls.BYD_HSV_MAX)
 
     @classmethod
+    @override
     def rating_class_etr(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(roi_bgr, cls.ETR_HSV_MIN, cls.ETR_HSV_MAX)
 
     @classmethod
+    @override
     def max_recall(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -232,6 +257,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_track_lost(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
         return cls.mask_bgr_in_hsv(
             roi_bgr,
@@ -240,6 +266,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_track_complete(
         cls,
         roi_bgr: cv2.typing.MatLike,
@@ -251,6 +278,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_full_recall(
         cls,
         roi_bgr: cv2.typing.MatLike,
@@ -262,6 +290,7 @@ class DeviceRoisMaskerAutoT2(DeviceRoisMaskerAuto):
         )
 
     @classmethod
+    @override
     def clear_status_pure_memory(
         cls,
         roi_bgr: cv2.typing.MatLike,

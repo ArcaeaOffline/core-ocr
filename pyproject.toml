@@ -13,6 +13,7 @@ requires-python = ">=3.11"
 dependencies = [
     "onnxruntime>=1,<2",
     "opencv-python-headless>=5,<6",
+    "typing-extensions>=4.5,<6",
 ]
 classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3"]
 

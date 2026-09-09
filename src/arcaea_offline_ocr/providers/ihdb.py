@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from typing_extensions import override
+
 from arcaea_offline_ocr.core import hashers
 
 from .base import ImageCategory, ImageIdProvider, ImageIdProviderResult
@@ -168,6 +170,7 @@ ORDER BY distance ASC LIMIT 10""",
     ) -> bytes:
         return bytes([255 if b else 0 for b in hash_mat.flatten()])
 
+    @override
     def results(self, img: MatLike, category: ImageCategory, /):
         results: list[ImageHashDatabaseIdProviderResult] = []
 
@@ -197,6 +200,7 @@ ORDER BY distance ASC LIMIT 10""",
 
         return results
 
+    @override
     def result(
         self,
         img: MatLike,

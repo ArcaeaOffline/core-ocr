@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 import cv2
 import numpy as np
+from typing_extensions import override
 
 from arcaea_offline_ocr.scenarios.device.masker.auto import (
     DeviceRoisMaskerAutoT1,
@@ -84,6 +85,7 @@ class DeviceRoisAutoSelectorDetectorT1(DeviceRoisAutoSelectorDetector):
     def _mask_far_lost_label(self, label_bgr: MatLike):
         return self._masker.gray(label_bgr)
 
+    @override
     def confidence(self, img_bgr: MatLike) -> float:
         rois = DeviceRoisAutoT1(img_bgr.shape[1], img_bgr.shape[0])
         label_width = self.PFL_LABEL_WIDTH * rois.factor
@@ -135,6 +137,7 @@ class DeviceRoisAutoSelectorDetectorT2(DeviceRoisAutoSelectorDetector):
 
     result: ClassVar[DeviceRoisAutoSelectorResult] = DeviceRoisAutoSelectorResult.T2
 
+    @override
     def confidence(self, img_bgr: MatLike) -> float:
         rois = DeviceRoisAutoT2(img_bgr.shape[1], img_bgr.shape[0])
         label_width = self.PFL_LABEL_WIDTH * rois.factor

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
+from typing_extensions import override
 
 from arcaea_offline_ocr.crop import crop_xywh
 from arcaea_offline_ocr.providers import (
@@ -207,6 +208,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
             played_at=None,
         )
 
+    @override
     def components(self, img: MatLike, /):
         """
         :param img: BGR format image
@@ -214,9 +216,11 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         self.set_factor(img)
         return self.rois.components(img)
 
+    @override
     def result(self, component_img: MatLike, /):
         return self.ocr_component(component_img)
 
+    @override
     def results(self, img: MatLike, /) -> list[OcrScenarioResult]:
         """
         :param img: BGR format image

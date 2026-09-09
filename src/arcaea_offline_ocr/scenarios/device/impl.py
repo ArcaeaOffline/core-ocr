@@ -3,6 +3,7 @@ from typing import Self
 import cv2
 import numpy as np
 from cv2.typing import MatLike
+from typing_extensions import override
 
 from arcaea_offline_ocr.crop import CropBlackEdges
 from arcaea_offline_ocr.providers import (
@@ -139,6 +140,7 @@ class DeviceScenario(DeviceScenarioBase):
             ImageCategory.PARTNER_ICON,
         )
 
+    @override
     def result(self):
         rating_class = self.rating_class()
         pure = self.pure()

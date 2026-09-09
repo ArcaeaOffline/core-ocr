@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 import cv2
 import numpy as np
+from typing_extensions import override
 
 from .base import OcrTextProvider
 
@@ -85,6 +86,7 @@ class OcrCrnnTextProvider(OcrTextProvider):
 
         return "".join(result)
 
+    @override
     def result_raw(self, img: MatLike, /) -> str | None:
         """
         :param img: BGR format roi
@@ -105,6 +107,7 @@ class OcrCrnnTextProvider(OcrTextProvider):
             logger.exception("Error occurred during CRNN OCR")
             return None
 
+    @override
     def result(self, img: MatLike, /) -> str | None:
         """
         :param img: BGR format roi
