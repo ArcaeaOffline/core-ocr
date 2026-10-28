@@ -1,7 +1,9 @@
 from abc import ABC
+from typing import ClassVar
 
 from typing_extensions import override
 
+from arcaea_offline_ocr.layouts import DeviceLayout, load_device_layout
 from arcaea_offline_ocr.types import XYWHRect
 
 from .base import DeviceRois
@@ -16,7 +18,67 @@ class DeviceRoisAuto(DeviceRois, ABC):
         self.h = h
 
 
-class DeviceRoisAutoT1(DeviceRoisAuto):
+class _DeviceRoisFromLayout(DeviceRoisAuto, ABC):
+    """Canvas-anchored fields served from a layout definition; subclasses
+    provide the layout and the screen-anchored ``partner_icon``."""
+
+    layout: ClassVar[DeviceLayout]
+
+    @property
+    @override
+    def pure(self):
+        return self.layout.screen_rect("pure", self.w, self.h)
+
+    @property
+    @override
+    def far(self):
+        return self.layout.screen_rect("far", self.w, self.h)
+
+    @property
+    @override
+    def lost(self):
+        return self.layout.screen_rect("lost", self.w, self.h)
+
+    @property
+    @override
+    def score(self):
+        return self.layout.screen_rect("score", self.w, self.h)
+
+    @property
+    @override
+    def rating_class(self):
+        return self.layout.screen_rect("rating_class", self.w, self.h)
+
+    @property
+    @override
+    def max_recall(self):
+        return self.layout.screen_rect("max_recall", self.w, self.h)
+
+    @property
+    @override
+    def jacket(self):
+        return self.layout.screen_rect("jacket", self.w, self.h)
+
+    @property
+    @override
+    def clear_status(self):
+        return self.layout.screen_rect("clear_status", self.w, self.h)
+
+
+class DeviceRoisAutoT1(_DeviceRoisFromLayout):
+    layout: ClassVar[DeviceLayout] = load_device_layout("t1")
+
+    @property
+    @override
+    def partner_icon(self):
+        # status-bar element created at runtime, pinned to the physical
+        # screen top; it has no position on the layout canvas
+        w = 90 * self.factor
+        h = 75 * self.factor
+        return XYWHRect(self.w_mid - w / 2, 0, w, h)
+
+    # anchor helpers: partner_icon and external subclasses position
+    # rois against them
     @property
     def factor(self):
         return (
@@ -32,122 +94,24 @@ class DeviceRoisAutoT1(DeviceRoisAuto):
         return self.h / 2
 
     @property
-    def top_bar(self):
-        return (0, 0, self.w, 50 * self.factor)
-
-    @property
     def layout_area_h_mid(self):
-        return self.h / 2 + self.top_bar[3]
+        return self.h / 2 + 50 * self.factor
 
-    @property
-    def pfl_left_from_w_mid(self):
-        return 5 * self.factor
 
-    @property
-    def pfl_x(self):
-        return self.w_mid + self.pfl_left_from_w_mid
-
-    @property
-    def pfl_w(self):
-        return 76 * self.factor
-
-    @property
-    def pfl_h(self):
-        return 26 * self.factor
-
-    @property
-    @override
-    def pure(self):
-        return XYWHRect(
-            self.pfl_x,
-            self.layout_area_h_mid + 110 * self.factor,
-            self.pfl_w,
-            self.pfl_h,
-        )
-
-    @property
-    @override
-    def far(self):
-        return XYWHRect(
-            self.pfl_x,
-            self.pure[1] + self.pure[3] + 12 * self.factor,
-            self.pfl_w,
-            self.pfl_h,
-        )
-
-    @property
-    @override
-    def lost(self):
-        return XYWHRect(
-            self.pfl_x,
-            self.far[1] + self.far[3] + 10 * self.factor,
-            self.pfl_w,
-            self.pfl_h,
-        )
-
-    @property
-    @override
-    def score(self):
-        w = 280 * self.factor
-        h = 45 * self.factor
-        return XYWHRect(
-            self.w_mid - w / 2,
-            self.layout_area_h_mid - 75 * self.factor - h,
-            w,
-            h,
-        )
-
-    @property
-    @override
-    def rating_class(self):
-        return XYWHRect(
-            self.w_mid - 610 * self.factor,
-            self.layout_area_h_mid - 180 * self.factor,
-            265 * self.factor,
-            35 * self.factor,
-        )
-
-    @property
-    @override
-    def max_recall(self):
-        return XYWHRect(
-            self.w_mid - 465 * self.factor,
-            self.layout_area_h_mid - 215 * self.factor,
-            150 * self.factor,
-            35 * self.factor,
-        )
-
-    @property
-    @override
-    def jacket(self):
-        return XYWHRect(
-            self.w_mid - 610 * self.factor,
-            self.layout_area_h_mid - 143 * self.factor,
-            375 * self.factor,
-            375 * self.factor,
-        )
-
-    @property
-    @override
-    def clear_status(self):
-        w = 550 * self.factor
-        h = 60 * self.factor
-        return XYWHRect(
-            self.w_mid - w / 2,
-            self.layout_area_h_mid - 155 * self.factor - h,
-            w * 0.4,
-            h,
-        )
+class DeviceRoisAutoT2(_DeviceRoisFromLayout):
+    layout: ClassVar[DeviceLayout] = load_device_layout("t2")
 
     @property
     @override
     def partner_icon(self):
-        w = 90 * self.factor
-        h = 75 * self.factor
+        # status-bar element created at runtime, pinned to the physical
+        # screen top; it has no position on the layout canvas
+        w = 135 * self.factor
+        h = 110 * self.factor
         return XYWHRect(self.w_mid - w / 2, 0, w, h)
 
-
-class DeviceRoisAutoT2(DeviceRoisAuto):
+    # anchor helpers: partner_icon and external subclasses position
+    # rois against them
     @property
     def factor(self):
         return (
@@ -165,116 +129,5 @@ class DeviceRoisAutoT2(DeviceRoisAuto):
         return self.h / 2
 
     @property
-    def top_bar(self):
-        return (0, 0, self.w, 75 * self.factor)
-
-    @property
     def layout_area_h_mid(self):
-        return self.h / 2 + self.top_bar[3]
-
-    @property
-    def pfl_mid_from_w_mid(self):
-        return 60 * self.factor
-
-    @property
-    def pfl_x(self):
-        return self.w_mid + 10 * self.factor
-
-    @property
-    def pfl_w(self):
-        return 100 * self.factor
-
-    @property
-    def pfl_h(self):
-        return 24 * self.factor
-
-    @property
-    @override
-    def pure(self):
-        return XYWHRect(
-            self.pfl_x,
-            self.layout_area_h_mid + 175 * self.factor,
-            self.pfl_w,
-            self.pfl_h,
-        )
-
-    @property
-    @override
-    def far(self):
-        return XYWHRect(
-            self.pfl_x,
-            self.pure[1] + self.pure[3] + 30 * self.factor,
-            self.pfl_w,
-            self.pfl_h,
-        )
-
-    @property
-    @override
-    def lost(self):
-        return XYWHRect(
-            self.pfl_x,
-            self.far[1] + self.far[3] + 35 * self.factor,
-            self.pfl_w,
-            self.pfl_h,
-        )
-
-    @property
-    @override
-    def score(self):
-        w = 420 * self.factor
-        h = 70 * self.factor
-        return XYWHRect(
-            self.w_mid - w / 2,
-            self.layout_area_h_mid - 110 * self.factor - h,
-            w,
-            h,
-        )
-
-    @property
-    @override
-    def rating_class(self):
-        return XYWHRect(
-            max(0, self.w_mid - 965 * self.factor),
-            self.layout_area_h_mid - 330 * self.factor,
-            350 * self.factor,
-            110 * self.factor,
-        )
-
-    @property
-    @override
-    def max_recall(self):
-        return XYWHRect(
-            self.w_mid - 625 * self.factor,
-            self.layout_area_h_mid - 275 * self.factor,
-            150 * self.factor,
-            50 * self.factor,
-        )
-
-    @property
-    @override
-    def jacket(self):
-        return XYWHRect(
-            self.w_mid - 915 * self.factor,
-            self.layout_area_h_mid - 215 * self.factor,
-            565 * self.factor,
-            565 * self.factor,
-        )
-
-    @property
-    @override
-    def clear_status(self):
-        w = 825 * self.factor
-        h = 90 * self.factor
-        return XYWHRect(
-            self.w_mid - w / 2,
-            self.layout_area_h_mid - 235 * self.factor - h,
-            w * 0.4,
-            h,
-        )
-
-    @property
-    @override
-    def partner_icon(self):
-        w = 135 * self.factor
-        h = 110 * self.factor
-        return XYWHRect(self.w_mid - w / 2, 0, w, h)
+        return self.h / 2 + 75 * self.factor

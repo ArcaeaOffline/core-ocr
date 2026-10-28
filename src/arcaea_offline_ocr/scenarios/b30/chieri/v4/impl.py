@@ -61,7 +61,7 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         self.__rois.factor = factor
 
     def set_factor(self, img: MatLike):
-        self.factor = img.shape[0] / 4400
+        self.rois.set_factor(img)
 
     def ocr_component_rating_class(self, component_bgr: MatLike) -> int:
         rating_class_rect = self.rois.component_rois.rating_class_rect.rounded()
