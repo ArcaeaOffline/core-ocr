@@ -19,10 +19,15 @@ classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Pytho
 
 [dependency-groups]
 dev = [
-    "ruff",
-    "pre-commit",
+    "basedpyright",
     "opencv-python>=5,<6",
+    "pre-commit",
+    "pytest",
+    "ruff",
 ]
+
+[tool.setuptools.package-data]
+arcaea_offline_ocr = ["layouts/**/*.json"]
 
 
 [project.urls]
@@ -42,6 +47,16 @@ reportExplicitAny = false
 reportAny = false
 reportUnusedCallResult = false
 
+# pytest APIs are untyped
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -51,3 +66,6 @@ ignore = [
   "PLR",
   "COM812", # formatter compatibility
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["INP001", "S101"]
