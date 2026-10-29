@@ -19,8 +19,8 @@ class DeviceRoisAuto(DeviceRois, ABC):
 
 
 class _DeviceRoisFromLayout(DeviceRoisAuto, ABC):
-    """Canvas-anchored fields served from a layout definition; subclasses
-    provide the layout and the screen-anchored ``partner_icon``."""
+    """Canvas-anchored roi fields from a layout definition; subclasses
+    provide the ``layout`` and the screen-anchored ``partner_icon``."""
 
     layout: ClassVar[DeviceLayout]
 
@@ -63,6 +63,34 @@ class _DeviceRoisFromLayout(DeviceRoisAuto, ABC):
     @override
     def clear_status(self):
         return self.layout.screen_rect("clear_status", self.w, self.h)
+
+    @property
+    def high_score(self):
+        return self.layout.screen_rect("high_score", self.w, self.h)
+
+    @property
+    def high_score_delta(self):
+        return self.layout.screen_rect("high_score_delta", self.w, self.h)
+
+    @property
+    def pure_shiny(self):
+        return self.layout.screen_rect("pure_shiny", self.w, self.h)
+
+    @property
+    def early_late(self):
+        return self.layout.screen_rect("early_late", self.w, self.h)
+
+    @property
+    def pure_label(self):
+        return self.layout.screen_rect("pure_label", self.w, self.h)
+
+    @property
+    def far_label(self):
+        return self.layout.screen_rect("far_label", self.w, self.h)
+
+    @property
+    def lost_label(self):
+        return self.layout.screen_rect("lost_label", self.w, self.h)
 
 
 class DeviceRoisAutoT1(_DeviceRoisFromLayout):
