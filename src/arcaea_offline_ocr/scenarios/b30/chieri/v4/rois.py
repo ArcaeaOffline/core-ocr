@@ -36,12 +36,16 @@ class ChieriBotV4ComponentRois:
         return self.layout.field_rect("score", self.factor)
 
     @property
-    def pfl_rect(self):
-        return self.layout.field_rect("pfl", self.factor)
+    def pure_rect(self):
+        return self.layout.field_rect("pure", self.factor)
 
     @property
-    def bg_point(self):
-        return self.layout.point("bg", self.factor)
+    def far_rect(self):
+        return self.layout.field_rect("far", self.factor)
+
+    @property
+    def lost_rect(self):
+        return self.layout.field_rect("lost", self.factor)
 
 
 class ChieriBotV4Rois:

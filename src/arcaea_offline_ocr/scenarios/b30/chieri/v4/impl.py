@@ -21,16 +21,10 @@ if TYPE_CHECKING:
 from .colors import (
     BYD_MAX_HSV,
     BYD_MIN_HSV,
-    FAR_BG_MAX_HSV,
-    FAR_BG_MIN_HSV,
     FTR_MAX_HSV,
     FTR_MIN_HSV,
-    LOST_BG_MAX_HSV,
-    LOST_BG_MIN_HSV,
     PRS_MAX_HSV,
     PRS_MIN_HSV,
-    PURE_BG_MAX_HSV,
-    PURE_BG_MIN_HSV,
 )
 from .rois import ChieriBotV4Rois
 
@@ -92,104 +86,18 @@ class ChieriBotV4Best30Scenario(Best30Scenario):
         ocr_result = self.score_provider.result(score_roi)
         return int(ocr_result) if ocr_result else 0
 
-    def find_pfl_rects(
-        self,
-        component_pfl_processed: MatLike,
-    ) -> list[tuple[int, int, int, int]]:
-        # sourcery skip: inline-immediately-returned-variable
-        pfl_roi_find = cv2.morphologyEx(
-            component_pfl_processed,
-            cv2.MORPH_CLOSE,
-            cv2.getStructuringElement(cv2.MORPH_RECT, [10, 1]),
-        )
-        pfl_contours, _ = cv2.findContours(
-            pfl_roi_find,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_NONE,
-        )
-        pfl_rects = [cv2.boundingRect(c) for c in pfl_contours]
-        pfl_rects = [
-            r for r in pfl_rects if r[3] > component_pfl_processed.shape[0] * 0.1
-        ]
-        pfl_rects = sorted(pfl_rects, key=lambda r: r[1])
-        return [
-            (
-                max(rect[0] - 2, 0),
-                rect[1],
-                min(rect[2] + 2, component_pfl_processed.shape[1]),
-                rect[3],
-            )
-            for rect in pfl_rects
-        ]
-
-    def preprocess_component_pfl(
-        self,
-        component_bgr: MatLike,
-    ) -> tuple[MatLike, MatLike]:
-        """Return the background-filled BGR roi and a mask for locating digits."""
-        pfl_rect = self.rois.component_rois.pfl_rect.rounded()
-        pfl_roi = crop_xywh(component_bgr, pfl_rect)
-        pfl_roi_hsv = cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2HSV)
-
-        # fill the pfl bg with background color
-        bg_point = [round(i) for i in self.rois.component_rois.bg_point]
-        bg_color = component_bgr[bg_point[1]][bg_point[0]]
-        pure_bg_mask = cv2.inRange(pfl_roi_hsv, PURE_BG_MIN_HSV, PURE_BG_MAX_HSV)
-        far_bg_mask = cv2.inRange(pfl_roi_hsv, FAR_BG_MIN_HSV, FAR_BG_MAX_HSV)
-        lost_bg_mask = cv2.inRange(pfl_roi_hsv, LOST_BG_MIN_HSV, LOST_BG_MAX_HSV)
-        pfl_roi[np.where(pure_bg_mask != 0)] = bg_color
-        pfl_roi[np.where(far_bg_mask != 0)] = bg_color
-        pfl_roi[np.where(lost_bg_mask != 0)] = bg_color
-
-        # threshold
-        pfl_roi = cv2.cvtColor(pfl_roi, cv2.COLOR_BGR2GRAY)
-        # get threshold of blurred image, try ignoring the lines of bg bar
-        pfl_roi_blurred = cv2.GaussianBlur(pfl_roi, (5, 5), 0)
-        # pfl_roi_blurred = cv2.medianBlur(pfl_roi, 3)
-        pfl_roi_blurred_threshold = cv2.threshold(
-            pfl_roi_blurred,
-            0,
-            255,
-            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
-        )[1]
-        # and a threshold of the original roi
-        pfl_roi_threshold = cv2.threshold(
-            pfl_roi,
-            0,
-            255,
-            cv2.THRESH_BINARY + cv2.THRESH_OTSU,
-        )[1]
-        # turn thresholds into black background
-        if pfl_roi_blurred_threshold[2][2] == 255:
-            pfl_roi_blurred_threshold = 255 - pfl_roi_blurred_threshold
-        if pfl_roi_threshold[2][2] == 255:
-            pfl_roi_threshold = 255 - pfl_roi_threshold
-        # return a bitwise_and result
-        result = cv2.bitwise_and(pfl_roi_blurred_threshold, pfl_roi_threshold)
-        result_eroded = cv2.erode(
-            result,
-            cv2.getStructuringElement(cv2.MORPH_CROSS, (2, 2)),
-        )
-        mask = result_eroded if len(self.find_pfl_rects(result_eroded)) == 3 else result
-        return pfl_roi, mask
-
     def ocr_component_pfl(
         self,
         component_bgr: MatLike,
     ) -> tuple[int | None, int | None, int | None]:
-        try:
-            pfl_roi, pfl_mask = self.preprocess_component_pfl(component_bgr)
-            pfl_rects = self.find_pfl_rects(pfl_mask)
-            pure_far_lost: list[int | None] = []
-            for pfl_roi_rect in pfl_rects:
-                # feed CRNN the BGR roi, the mask is only for locating digits
-                roi = crop_xywh(pfl_roi, pfl_roi_rect)
-                result = self.pfl_provider.result(roi)
-                pure_far_lost.append(int(result) if result else None)
+        rois = self.rois.component_rois
+        pure_far_lost: list[int | None] = []
+        for rect in (rois.pure_rect, rois.far_rect, rois.lost_rect):
+            roi = crop_xywh(component_bgr, rect.rounded())
+            result = self.pfl_provider.result(roi)
+            pure_far_lost.append(int(result) if result else None)
 
-            return tuple(pure_far_lost)  # pyright: ignore[reportReturnType]
-        except Exception:  # noqa: BLE001
-            return (None, None, None)
+        return tuple(pure_far_lost)  # pyright: ignore[reportReturnType]
 
     def ocr_component(self, component_bgr: MatLike) -> OcrScenarioResult:
         component_blur = cv2.GaussianBlur(component_bgr, (5, 5), 0)

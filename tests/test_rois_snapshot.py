@@ -30,6 +30,13 @@ T1_WIDE = (
         "jacket": [45.0, 400.5, 562.5, 562.5],
         "clear_status": [547.5, 292.5, 330.0, 90.0],
         "partner_icon": [892.5, 0, 135.0, 112.5],
+        "high_score": [864.0, 529.5, 279.0, 60.0],
+        "high_score_delta": [1155.0, 529.5, 177.0, 60.0],
+        "pure_shiny": [1074.0, 781.5, 93.0, 45.0],
+        "early_late": [1071.0, 834.0, 412.5, 48.0],
+        "pure_label": [858.0, 774.855, 91.5, 55.5],
+        "far_label": [883.5, 829.1999999999999, 66.0, 55.5],
+        "lost_label": [861.0, 884.355, 88.5, 55.5],
     },
 )
 
@@ -47,6 +54,13 @@ T1_NARROW = (
         "jacket": [33.75, 435.375, 421.875, 421.875],
         "clear_status": [410.625, 354.375, 247.5, 67.5],
         "partner_icon": [669.375, 0, 101.25, 84.375],
+        "high_score": [648.0, 532.125, 209.25, 45.0],
+        "high_score_delta": [866.25, 532.125, 132.75, 45.0],
+        "pure_shiny": [805.5, 721.125, 69.75, 33.75],
+        "early_late": [803.25, 760.5, 309.375, 36.0],
+        "pure_label": [643.5, 716.1412500000001, 68.625, 41.625],
+        "far_label": [662.625, 756.9, 49.5, 41.625],
+        "lost_label": [645.75, 798.2662500000001, 66.375, 41.625],
     },
 )
 
@@ -64,6 +78,13 @@ T2_WIDE = (
         "jacket": [255.0, 400.0, 565.0, 565.0],
         "clear_status": [757.5, 290.0, 330.0, 90.0],
         "partner_icon": [1102.5, 0, 135.0, 110.0],
+        "high_score": [1150.0, 530.0, 190.0, 55.0],
+        "high_score_delta": [1360.0, 530.0, 160.0, 55.0],
+        "pure_shiny": [1283.0, 773.0, 108.0, 56.0],
+        "early_late": [1282.0, 828.0, 275.0, 62.0],
+        "pure_label": [1071.0, 778.5, 82.5, 48.0],
+        "far_label": [1083.0, 833.205, 60.0, 48.0],
+        "lost_label": [1072.5, 888.75, 81.0, 48.0],
     },
 )
 
@@ -81,6 +102,13 @@ T2_NARROW = (
         "jacket": [33.75, 435.0, 423.75, 423.75],
         "clear_status": [410.625, 352.5, 247.5, 67.5],
         "partner_icon": [669.375, 0, 101.25, 82.5],
+        "high_score": [705.0, 532.5, 142.5, 41.25],
+        "high_score_delta": [862.5, 532.5, 120.0, 41.25],
+        "pure_shiny": [804.75, 714.75, 81.0, 42.0],
+        "early_late": [804.0, 756.0, 206.25, 46.5],
+        "pure_label": [645.75, 718.875, 61.875, 36.0],
+        "far_label": [654.75, 759.9037500000001, 45.0, 36.0],
+        "lost_label": [646.875, 801.5625, 60.75, 36.0],
     },
 )
 
@@ -187,5 +215,6 @@ def test_chieri_component_rois_snapshot():
     assert list(rois.rating_class_rect) == pytest.approx([21, 40, 7, 20])
     assert list(rois.jacket_rect) == pytest.approx([263, 0, 239, 239])
     assert list(rois.score_rect) == pytest.approx([30, 60, 270, 55])
-    assert list(rois.pfl_rect) == pytest.approx([50, 125, 80, 100])
-    assert rois.bg_point == pytest.approx((75, 10))
+    assert list(rois.pure_rect) == pytest.approx([64, 134, 62, 20])
+    assert list(rois.far_rect) == pytest.approx([64, 167, 62, 20])
+    assert list(rois.lost_rect) == pytest.approx([64, 201, 62, 20])
