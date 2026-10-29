@@ -31,14 +31,9 @@ class DeviceRoisAutoSelectorResult(Enum):
     UNKNOWN = "UNKNOWN"
 
 
-def crop_rounded(img: MatLike, rect: tuple[float, float, float, float]) -> MatLike:
+def crop_rounded(img_bgr: MatLike, rect: tuple[float, float, float, float]) -> MatLike:
     x, y, w, h = (round(v) for v in rect)
-    return img[y : y + h, x : x + w]
-
-
-def pfl_label_rect(roi: tuple[float, float, float, float], label_width: float):
-    x, y, _, h = roi
-    return (x - label_width, y, label_width, h)
+    return img_bgr[y : y + h, x : x + w]
 
 
 class DeviceRoisAutoSelectorDetector(ABC):
@@ -62,7 +57,6 @@ class DeviceRoisAutoSelectorDetector(ABC):
 class DeviceRoisAutoSelectorDetectorT1(DeviceRoisAutoSelectorDetector):
     INTEREST_POINTS: ClassVar[float] = 3.0
 
-    PFL_LABEL_WIDTH: ClassVar[int] = 85
     PURE_LABEL_HSV_LOWER: ClassVar[np.ndarray] = np.array([80, 60, 125], np.uint8)
     PURE_LABEL_HSV_UPPER: ClassVar[np.ndarray] = np.array([110, 200, 225], np.uint8)
 
@@ -88,7 +82,6 @@ class DeviceRoisAutoSelectorDetectorT1(DeviceRoisAutoSelectorDetector):
     @override
     def confidence(self, img_bgr: MatLike) -> float:
         rois = DeviceRoisAutoT1(img_bgr.shape[1], img_bgr.shape[0])
-        label_width = self.PFL_LABEL_WIDTH * rois.factor
 
         interests: list[
             tuple[
@@ -96,17 +89,17 @@ class DeviceRoisAutoSelectorDetectorT1(DeviceRoisAutoSelectorDetector):
             ]
         ] = [
             (
-                rois.pure,
+                rois.pure_label,
                 self._mask_pure_label,
                 self.PURE_LABEL_NON_ZERO_RATIO_THRESHOLD,
             ),
             (
-                rois.far,
+                rois.far_label,
                 self._mask_far_lost_label,
                 self.FAR_LABEL_NON_ZERO_RATIO_THRESHOLD,
             ),
             (
-                rois.lost,
+                rois.lost_label,
                 self._mask_far_lost_label,
                 self.LOST_LABEL_NON_ZERO_RATIO_THRESHOLD,
             ),
@@ -114,7 +107,7 @@ class DeviceRoisAutoSelectorDetectorT1(DeviceRoisAutoSelectorDetector):
 
         matches = 0
         for roi, masker, threshold in interests:
-            label_bgr = crop_rounded(img_bgr, pfl_label_rect(roi, label_width))
+            label_bgr = crop_rounded(img_bgr, roi)
             label_masked = masker(label_bgr)
             if np.count_nonzero(label_masked) / label_masked.size >= threshold:
                 matches += 1
@@ -125,7 +118,6 @@ class DeviceRoisAutoSelectorDetectorT1(DeviceRoisAutoSelectorDetector):
 class DeviceRoisAutoSelectorDetectorT2(DeviceRoisAutoSelectorDetector):
     INTEREST_POINTS: ClassVar[float] = 3.0
 
-    PFL_LABEL_WIDTH: ClassVar[int] = 180
     PURE_LABEL_HSV_LOWER: ClassVar[np.ndarray] = np.array([110, 25, 90], np.uint8)
     PURE_LABEL_HSV_UPPER: ClassVar[np.ndarray] = np.array([160, 150, 230], np.uint8)
     FAR_LABEL_HSV_LOWER: ClassVar[np.ndarray] = np.array([5, 25, 120], np.uint8)
@@ -140,17 +132,16 @@ class DeviceRoisAutoSelectorDetectorT2(DeviceRoisAutoSelectorDetector):
     @override
     def confidence(self, img_bgr: MatLike) -> float:
         rois = DeviceRoisAutoT2(img_bgr.shape[1], img_bgr.shape[0])
-        label_width = self.PFL_LABEL_WIDTH * rois.factor
 
         interests: list[tuple[tuple[float, float, float, float], MatLike, MatLike]] = [
-            (rois.pure, self.PURE_LABEL_HSV_LOWER, self.PURE_LABEL_HSV_UPPER),
-            (rois.far, self.FAR_LABEL_HSV_LOWER, self.FAR_LABEL_HSV_UPPER),
-            (rois.lost, self.LOST_LABEL_HSV_LOWER, self.LOST_LABEL_HSV_UPPER),
+            (rois.pure_label, self.PURE_LABEL_HSV_LOWER, self.PURE_LABEL_HSV_UPPER),
+            (rois.far_label, self.FAR_LABEL_HSV_LOWER, self.FAR_LABEL_HSV_UPPER),
+            (rois.lost_label, self.LOST_LABEL_HSV_LOWER, self.LOST_LABEL_HSV_UPPER),
         ]
 
         matches = 0
         for roi, hsv_lower, hsv_upper in interests:
-            label_bgr = crop_rounded(img_bgr, pfl_label_rect(roi, label_width))
+            label_bgr = crop_rounded(img_bgr, roi)
             label_hsv = cv2.cvtColor(label_bgr, cv2.COLOR_BGR2HSV)
             label_masked = cv2.inRange(label_hsv, hsv_lower, hsv_upper)
             if np.count_nonzero(label_masked) / label_masked.size >= (
