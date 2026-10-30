@@ -45,7 +45,7 @@ class OcrCrnnTextProvider(OcrTextProvider):
         self.pad_token = info["pad_token"]
 
         # lazy import only when needed
-        import onnxruntime as ort
+        import onnxruntime as ort  # noqa: PLC0415
 
         self.session = ort.InferenceSession(str(model_path))
         self._input_name = str(self.session.get_inputs()[0].name)
