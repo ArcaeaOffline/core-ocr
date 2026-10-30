@@ -26,6 +26,7 @@ from arcaea_offline_ocr.types import XYWHRect
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
+    from typing import Self
 
 Rect = tuple[float, float, float, float]
 Point = tuple[float, float]
@@ -40,6 +41,14 @@ def _load_json(group: str, name: str) -> dict[str, Any]:
 class DeviceLayout:
     design: tuple[int, int]
     fields: Mapping[str, Rect]
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> Self:
+        """Parse a ``device/*.json`` file mapping."""
+        return cls(
+            design=tuple(data["design"]),
+            fields={k: tuple(v) for k, v in data["fields"].items()},
+        )
 
     def screen_rect(self, field: str, w: int, h: int) -> XYWHRect:
         x_d, y_d, w_d, h_d = self.fields[field]
@@ -57,6 +66,17 @@ class CardLayout:
     cards: Sequence[Point]
     fields: Mapping[str, Rect]
     points: Mapping[str, Point]
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> Self:
+        """Parse a ``b30/*.json`` file mapping."""
+        return cls(
+            canvas=tuple(data["canvas"]),
+            card_size=tuple(data["card_size"]),
+            cards=tuple(tuple(p) for p in data["cards"]),
+            fields={k: tuple(v) for k, v in data["fields"].items()},
+            points={k: tuple(v) for k, v in data.get("points", {}).items()},
+        )
 
     @property
     def component_count(self) -> int:
@@ -79,29 +99,13 @@ class CardLayout:
 
 
 @cache
-def load_device_layout(name: str) -> DeviceLayout:
-    data = _load_json("device", name)
-    return DeviceLayout(
-        design=tuple(data["design"]),
-        fields={k: tuple(v) for k, v in data["fields"].items()},
-    )
+def load_builtin_device_layout(name: str) -> DeviceLayout:
+    return DeviceLayout.from_dict(_load_json("device", name))
 
 
 @cache
-def load_card_layout(name: str) -> CardLayout:
-    data = _load_json("b30", name)
-    return CardLayout(
-        canvas=tuple(data["canvas"]),
-        card_size=tuple(data["card_size"]),
-        cards=tuple(tuple(p) for p in data["cards"]),
-        fields={k: tuple(v) for k, v in data["fields"].items()},
-        points={k: tuple(v) for k, v in data.get("points", {}).items()},
-    )
+def load_builtin_card_layout(name: str) -> CardLayout:
+    return CardLayout.from_dict(_load_json("b30", name))
 
 
-__all__ = [
-    "CardLayout",
-    "DeviceLayout",
-    "load_card_layout",
-    "load_device_layout",
-]
+__all__ = ["CardLayout", "DeviceLayout"]

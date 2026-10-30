@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from typing_extensions import override
 
-from arcaea_offline_ocr.layouts import DeviceLayout, load_device_layout
+from arcaea_offline_ocr.layouts import DeviceLayout, load_builtin_device_layout
 from arcaea_offline_ocr.types import XYWHRect
 
 from .base import DeviceRois
@@ -94,7 +94,7 @@ class _DeviceRoisFromLayout(DeviceRoisAuto, ABC):
 
 
 class DeviceRoisAutoT1(_DeviceRoisFromLayout):
-    layout: ClassVar[DeviceLayout] = load_device_layout("t1")
+    layout: ClassVar[DeviceLayout] = load_builtin_device_layout("t1")
 
     @property
     @override
@@ -127,7 +127,7 @@ class DeviceRoisAutoT1(_DeviceRoisFromLayout):
 
 
 class DeviceRoisAutoT2(_DeviceRoisFromLayout):
-    layout: ClassVar[DeviceLayout] = load_device_layout("t2")
+    layout: ClassVar[DeviceLayout] = load_builtin_device_layout("t2")
 
     @property
     @override

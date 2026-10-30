@@ -7,7 +7,7 @@ shifting roi windows.
 
 import pytest
 
-from arcaea_offline_ocr.layouts import load_card_layout
+from arcaea_offline_ocr.layouts import load_builtin_card_layout
 from arcaea_offline_ocr.scenarios.b30.chieri.v4.rois import (
     ChieriBotV4ComponentRois,
 )
@@ -198,12 +198,12 @@ CHIERI_CARDS_FACTOR_HALF = [
 
 
 def test_chieri_card_layout_snapshot():
-    layout = load_card_layout("chieri_v4")
+    layout = load_builtin_card_layout("chieri_v4")
     assert layout.component_count == 33
 
 
 def test_chieri_cards_snapshot():
-    layout = load_card_layout("chieri_v4")
+    layout = load_builtin_card_layout("chieri_v4")
     for i, expected in enumerate(CHIERI_CARDS_FACTOR_1):
         assert list(layout.card_rect(i, 1.0)) == pytest.approx(expected, abs=1e-9)
     for i, expected in enumerate(CHIERI_CARDS_FACTOR_HALF):

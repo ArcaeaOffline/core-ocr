@@ -3,14 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from arcaea_offline_ocr.crop import crop_xywh
-from arcaea_offline_ocr.layouts import CardLayout, load_card_layout
+from arcaea_offline_ocr.layouts import CardLayout, load_builtin_card_layout
 
 if TYPE_CHECKING:
     from cv2.typing import MatLike
 
 
 class ChieriBotV4ComponentRois:
-    layout: ClassVar[CardLayout] = load_card_layout("chieri_v4")
+    layout: ClassVar[CardLayout] = load_builtin_card_layout("chieri_v4")
 
     def __init__(self, factor: float = 1.0):
         self.__factor = factor
@@ -49,7 +49,7 @@ class ChieriBotV4ComponentRois:
 
 
 class ChieriBotV4Rois:
-    layout: ClassVar[CardLayout] = load_card_layout("chieri_v4")
+    layout: ClassVar[CardLayout] = load_builtin_card_layout("chieri_v4")
 
     def __init__(self, factor: float = 1.0):
         self.__factor = factor
