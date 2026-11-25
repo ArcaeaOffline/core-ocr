@@ -1,18 +1,4 @@
-"""Roi layout definitions, loaded from the JSON files packaged here.
-
-Every rect in a layout file is ``[x, y, w, h]`` from the top-left
-corner of the file's own coordinate space.
-
-``device/*.json`` files author field windows on the design canvas the
-file declares; ``DeviceLayout.screen_rect`` maps a window onto a
-screenshot - screens with the canvas aspect or wider scale by height,
-narrower ones scale by width and center the content vertically.
-
-``b30/*.json`` files describe bot-rendered images with a fixed pixel
-canvas: an ordered list of card origins (list index = component
-index) plus card-local field windows and probe points, all scaled
-uniformly by image width.
-"""
+"""Roi layout definitions loaded from packaged JSON files."""
 
 from __future__ import annotations
 
@@ -39,8 +25,16 @@ def _load_json(group: str, name: str) -> dict[str, Any]:
 
 @dataclass(frozen=True)
 class DeviceLayout:
+    """Field windows authored in design-canvas coordinates.
+
+    Rects are ``[x, y, w, h]`` measured from the canvas top-left. Map
+    them onto a screenshot with ``screen_rect``.
+    """
+
     design: tuple[int, int]
     fields: Mapping[str, Rect]
+    tablet_max_aspect: float | None = None
+    tablet_height_ratio: float = 4 / 3
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> Self:
@@ -48,19 +42,39 @@ class DeviceLayout:
         return cls(
             design=tuple(data["design"]),
             fields={k: tuple(v) for k, v in data["fields"].items()},
+            tablet_max_aspect=data.get("tablet_max_aspect"),
+            tablet_height_ratio=data.get("tablet_height_ratio") or 4 / 3,
         )
 
     def screen_rect(self, field: str, w: int, h: int) -> XYWHRect:
+        """Map a field window onto a ``w`` x ``h`` screenshot.
+
+        Screens at the design aspect or wider scale by height and anchor
+        the content to the screen top; narrower ones scale by width and
+        center the content vertically. A layout declaring
+        ``tablet_max_aspect`` renders narrower screenshots below that
+        aspect inside a canvas ``tablet_height_ratio`` times the design
+        height instead: the design panel stays centered inside the
+        taller stage.
+        """
         x_d, y_d, w_d, h_d = self.fields[field]
         dw, dh = self.design
-        f = min(w / dw, h / dh)
+        if self.tablet_max_aspect is not None and (w / h) < self.tablet_max_aspect:
+            f = min(w / dw, h / (dh * self.tablet_height_ratio))
+        else:
+            f = min(w / dw, h / dh)
         x = max(0.0, w / 2 + (x_d - dw / 2) * f)
-        y = y_d * f if (w / h) >= (dw / dh) else h / 2 + (y_d - dh / 2) * f
+        y = h / 2 + (y_d - dh / 2) * f
         return XYWHRect(x, y, w_d * f, h_d * f)
 
 
 @dataclass(frozen=True)
 class CardLayout:
+    """Layout of a bot-rendered b30 image on a fixed pixel canvas: card
+    origins ordered by component index, card-local field windows and
+    probe points, all scaled uniformly by image width.
+    """
+
     canvas: tuple[int, int]
     card_size: tuple[float, float]
     cards: Sequence[Point]
