@@ -7,7 +7,6 @@ from .rois import (
     DeviceRoisAutoT1,
     DeviceRoisAutoT2,
 )
-from .screenshot_detect import ScreenshotDetect
 
 __all__ = [
     "DeviceRoisAutoSelector",
@@ -18,5 +17,4 @@ __all__ = [
     "DeviceRoisMaskerAutoT1",
     "DeviceRoisMaskerAutoT2",
     "DeviceScenario",
-    "ScreenshotDetect",
 ]

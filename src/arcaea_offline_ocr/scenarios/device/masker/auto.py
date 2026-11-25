@@ -6,6 +6,7 @@ import numpy as np
 from typing_extensions import override
 
 from .base import DeviceRoisMasker
+from .rgb_gray import RgbGrayMasker
 
 
 class DeviceRoisMaskerAuto(DeviceRoisMasker, ABC):
@@ -58,12 +59,7 @@ class DeviceRoisMaskerAutoT1(DeviceRoisMaskerAuto):
 
     @classmethod
     def gray(cls, roi_bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        bgr_value_equal_mask = np.max(roi_bgr, axis=2) - np.min(roi_bgr, axis=2) <= 5
-        img_bgr = roi_bgr.copy()
-        img_bgr[~bgr_value_equal_mask] = np.array([0, 0, 0], roi_bgr.dtype)
-        img_bgr = cv2.erode(img_bgr, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)))
-        img_bgr = cv2.dilate(img_bgr, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1)))
-        return cv2.inRange(img_bgr, cls.GRAY_BGR_MIN, cls.GRAY_BGR_MAX)
+        return RgbGrayMasker.gray(roi_bgr, cls.GRAY_BGR_MIN, cls.GRAY_BGR_MAX)
 
     @classmethod
     @override

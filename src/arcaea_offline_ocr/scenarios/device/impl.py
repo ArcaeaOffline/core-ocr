@@ -53,7 +53,7 @@ class DeviceScenario(DeviceScenarioBase):
         auto-detected on the cropped image. Raises ValueError when the
         type cannot be determined and no fallback is given.
         """
-        img_cropped = CropBlackEdges.crop_or_original(img_bgr)
+        img_cropped = CropBlackEdges.crop_or_clone(img_bgr)
         h, w = img_cropped.shape[:2]
 
         result = DeviceRoisAutoSelector.select(img_cropped, fallback)

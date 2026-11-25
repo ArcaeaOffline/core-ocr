@@ -77,19 +77,29 @@ class CropBlackEdges:
         convert_flag: int = cv2.COLOR_BGR2GRAY,
         black_threshold: int = 25,
     ) -> cv2.typing.MatLike:
+        """Crop the black edges of ``img``.
+
+        Raises ValueError when the image is fully black; use crop_or_clone to
+        fall back to a clone of the original image instead of raising.
+        """
         rect = cls.get_crop_rect(cv2.cvtColor(img, convert_flag), black_threshold)
-        return crop_xywh(img, rect)
+        # crop_xywh returns a view; copy so the result never aliases img
+        return crop_xywh(img, rect).copy()
 
     @classmethod
-    def crop_or_original(
+    def crop_or_clone(
         cls,
         img: cv2.typing.MatLike,
         convert_flag: int = cv2.COLOR_BGR2GRAY,
         black_threshold: int = 25,
     ) -> cv2.typing.MatLike:
-        """Try cropping the image, return the original image if any error occurred."""
+        """Crop the black edges of ``img``, falling back to a clone on failure.
+
+        The returned image never aliases ``img``, so the caller may modify or
+        free the original independently of this result.
+        """
         try:
             return cls.crop(img, convert_flag, black_threshold)
         except Exception:
             logger.exception("Error cropping an image")
-            return img
+            return img.copy()
